@@ -3,10 +3,12 @@ import math
 from collections import defaultdict
 from pathlib import Path
 
+import mlrunner
+
 PROJECT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = PROJECT_DIR.parent
-K_RESULTS_FILE = PROJECT_DIR / "results" / "k_sweep_results.csv"
-BASELINE_RESULTS_FILE = PROJECT_DIR / "results" / "baseline_comparison_results.csv"
+K_RESULTS_FILE = mlrunner.RESULTS_DIR / "k_sweep_results.csv"
+BASELINE_RESULTS_FILE = mlrunner.RESULTS_DIR / "baseline_comparison_results.csv"
 FIG_FILE = ROOT_DIR / "fig" / "k_sweep_cost_decomposition.tex"
 TS_FIG_FILE = ROOT_DIR / "fig" / "k_sweep_cost_decomposition_ts.tex"
 UCB_COST_FIG_FILE = ROOT_DIR / "fig" / "ucb_cost_experiments.tex"
@@ -668,7 +670,7 @@ def write_figure(k_rows, baseline_rows):
 \end{{minipage}}}}
 \par\vspace{{0.15em}}
 {shared_ratio_legend()}
-\caption{{MovieLens-1M $K$-sweep with $T=200{{,}}000$ over ten repeats. For each $K$, the $K-1$ highest-count movies are non-target arms and the smallest-positive-mean movie is the target. Panels (a)--(b) report total, target-arm, and average per-non-target cost for both offline constructions and the bounded online heuristics. Panels (c)--(d) distinguish total target-arm exposure $N_K/T$ from post-deployment success $N_K^{{\on}}/H$.}}
+\caption{{{mlrunner.DATASET_LABEL} $K$-sweep with $T=200{{,}}000$ over ten repeats. For each $K$, the $K-1$ highest-count movies are non-target arms and the smallest-positive-mean movie is the target. Panels (a)--(b) report total, target-arm, and average per-non-target cost for both offline constructions and the bounded online heuristics. Panels (c)--(d) distinguish total target-arm exposure $N_K/T$ from post-deployment success $N_K^{{\on}}/H$.}}
 \label{{fig:k_sweep_cost_decomposition}}
 \end{{figure*}}
 """
@@ -691,7 +693,7 @@ def write_figure(k_rows, baseline_rows):
 {ucb_ratio_panel}
 \par\vspace{{0.15em}}
 {combined_legend()}
-\caption{{MovieLens-1M UCB $K$-sweep with $T=200{{,}}000$ over ten repeats. Panel (a) reports total, target-arm, and average per-non-target cost for both offline constructions and the bounded heuristic. Panel (b) distinguishes $N_K/T$ from $N_K^{{\on}}/H$.}}
+\caption{{{mlrunner.DATASET_LABEL} UCB $K$-sweep with $T=200{{,}}000$ over ten repeats. Panel (a) reports total, target-arm, and average per-non-target cost for both offline constructions and the bounded heuristic. Panel (b) distinguishes $N_K/T$ from $N_K^{{\on}}/H$.}}
 \label{{fig:k_sweep_cost_decomposition}}
 \end{{figure*}}
 """
@@ -704,7 +706,7 @@ def write_figure(k_rows, baseline_rows):
 {ts_ratio_panel}
 \par\vspace{{0.15em}}
 {combined_legend()}
-\caption{{MovieLens-1M Thompson Sampling $K$-sweep with $T=200{{,}}000$ over ten repeats. Panel (a) reports total, target-arm, and average per-non-target cost for both offline constructions and the bounded heuristic. Panel (b) distinguishes $N_K/T$ from $N_K^{{\on}}/H$.}}
+\caption{{{mlrunner.DATASET_LABEL} Thompson Sampling $K$-sweep with $T=200{{,}}000$ over ten repeats. Panel (a) reports total, target-arm, and average per-non-target cost for both offline constructions and the bounded heuristic. Panel (b) distinguishes $N_K/T$ from $N_K^{{\on}}/H$.}}
 \label{{fig:k_sweep_cost_decomposition_ts}}
 \end{{figure*}}
 """
@@ -734,19 +736,19 @@ def write_figure(k_rows, baseline_rows):
 
     UCB_COST_FIG_FILE.write_text(two_panel_figure(
         fixed["fixed_ucb_cost.tex"], ucb_cost_panel, metric_legend("cost"),
-        "UCB attack costs versus horizon $T$ and number of arms $K$ on MovieLens-1M.",
+        f"UCB attack costs versus horizon $T$ and number of arms $K$ on {mlrunner.DATASET_LABEL}.",
         "fig:ucb_cost_experiments"), encoding="utf-8")
     UCB_RATIO_FIG_FILE.write_text(two_panel_figure(
         fixed["fixed_ucb_ratio.tex"], ucb_ratio_panel, metric_legend("ratio"),
-        "UCB target-arm ratios versus horizon $T$ and number of arms $K$ on MovieLens-1M.",
+        f"UCB target-arm ratios versus horizon $T$ and number of arms $K$ on {mlrunner.DATASET_LABEL}.",
         "fig:ucb_ratio_experiments"), encoding="utf-8")
     TS_COST_FIG_FILE.write_text(two_panel_figure(
         fixed["fixed_ts_cost.tex"], ts_cost_panel, metric_legend("cost"),
-        "Thompson Sampling attack costs versus horizon $T$ and number of arms $K$ on MovieLens-1M.",
+        f"Thompson Sampling attack costs versus horizon $T$ and number of arms $K$ on {mlrunner.DATASET_LABEL}.",
         "fig:ts_cost_experiments"), encoding="utf-8")
     TS_RATIO_FIG_FILE.write_text(two_panel_figure(
         fixed["fixed_ts_ratio.tex"], ts_ratio_panel, metric_legend("ratio"),
-        "Thompson Sampling target-arm ratios versus horizon $T$ and number of arms $K$ on MovieLens-1M.",
+        f"Thompson Sampling target-arm ratios versus horizon $T$ and number of arms $K$ on {mlrunner.DATASET_LABEL}.",
         "fig:ts_ratio_experiments"), encoding="utf-8")
     print(f"wrote {FIG_FILE}")
     print(f"wrote {TS_FIG_FILE}")

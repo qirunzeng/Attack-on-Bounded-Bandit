@@ -11,6 +11,8 @@ r_l = 0.0
 r_u = 1.0
 R = r_u - r_l
 reward_distribution = "Bernoulli(mu_i)"
+reward_source = "bernoulli"
+empirical_reward_arrays = None
 sigma = 0.5
 mu_non_target = [0.80, 0.72, 0.64, 0.56, 0.48, 0.40, 0.32, 0.24, 0.16]
 mu_target = 0.02
@@ -26,6 +28,22 @@ simulate_online = True
 # Optional certified lower bound for controlled sensitivity studies. Production
 # runners leave this as None and use the data-dependent confidence bound.
 target_lower_bound_override = None
+
+
+def draw_environment_reward(rng, arm):
+    """Draw an arm reward from the configured stochastic environment."""
+    if reward_source == "empirical":
+        if empirical_reward_arrays is None or len(empirical_reward_arrays) != K:
+            raise RuntimeError("Empirical reward arrays are not configured for all K arms.")
+        rewards = empirical_reward_arrays[arm]
+        if len(rewards) == 0:
+            raise RuntimeError(f"Empirical reward array for arm {arm} is empty.")
+        return float(rewards[rng.integers(0, len(rewards))])
+    if reward_source != "bernoulli":
+        raise ValueError(f"Unknown reward_source={reward_source!r}.")
+    # Previous Scheme A (kept as the Bernoulli fallback):
+    # reward = 1.0 if rng.random() < mu[arm] else 0.0
+    return 1.0 if rng.random() < mu[arm] else 0.0
 
 
 def _n0():
@@ -266,7 +284,7 @@ def UCB_fixed_T(clean_sum, clean_mean, T):
         muhat = sums / counts
         index = muhat + 3.0 * sigma * np.sqrt(math.log(t) / counts)
         arm = int(np.argmax(index))
-        reward = 1.0 if rng.random() < mu[arm] else 0.0
+        reward = draw_environment_reward(rng, arm)
         counts[arm] += 1.0
         sums[arm] += reward
         online_counts[arm] += 1
@@ -439,7 +457,7 @@ def UCB_direct_fixed_T(clean_sum, clean_mean, T):
         muhat = sums / counts
         index = muhat + 3.0 * sigma * np.sqrt(math.log(t) / counts)
         arm = int(np.argmax(index))
-        reward = 1.0 if rng.random() < mu[arm] else 0.0
+        reward = draw_environment_reward(rng, arm)
         counts[arm] += 1.0
         sums[arm] += reward
         online_counts[arm] += 1
@@ -614,7 +632,7 @@ def TS_fixed_T(clean_sum, clean_mean, T):
         muhat = sums / counts
         samples = rng.normal(loc=muhat, scale=1.0 / np.sqrt(counts))
         arm = int(np.argmax(samples))
-        reward = 1.0 if rng.random() < mu[arm] else 0.0
+        reward = draw_environment_reward(rng, arm)
         counts[arm] += 1.0
         sums[arm] += reward
         online_counts[arm] += 1
@@ -788,7 +806,7 @@ def TS_direct_fixed_T(clean_sum, clean_mean, T):
         muhat = sums / counts
         samples = rng.normal(loc=muhat, scale=1.0 / np.sqrt(counts))
         arm = int(np.argmax(samples))
-        reward = 1.0 if rng.random() < mu[arm] else 0.0
+        reward = draw_environment_reward(rng, arm)
         counts[arm] += 1.0
         sums[arm] += reward
         online_counts[arm] += 1
@@ -831,7 +849,7 @@ def simulate_clean_fixed_T(clean_sum, clean_mean, T, algorithm_name, rng_offset)
             muhat = sums / counts
             samples = rng.normal(loc=muhat, scale=1.0 / np.sqrt(counts))
             arm = int(np.argmax(samples))
-        reward = 1.0 if rng.random() < mu[arm] else 0.0
+        reward = draw_environment_reward(rng, arm)
         counts[arm] += 1.0
         sums[arm] += reward
         online_counts[arm] += 1
@@ -881,7 +899,7 @@ def simulate_clean_fixed_T_grid(clean_sum, clean_mean, T_grid, algorithm_name, r
             muhat = sums / counts
             samples = rng.normal(loc=muhat, scale=1.0 / np.sqrt(counts))
             arm = int(np.argmax(samples))
-        reward = 1.0 if rng.random() < mu[arm] else 0.0
+        reward = draw_environment_reward(rng, arm)
         counts[arm] += 1.0
         sums[arm] += reward
         online_counts[arm] += 1

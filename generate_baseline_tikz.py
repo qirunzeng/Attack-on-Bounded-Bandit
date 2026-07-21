@@ -3,9 +3,11 @@ import math
 from collections import defaultdict
 from pathlib import Path
 
+import mlrunner
+
 PROJECT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = PROJECT_DIR.parent
-RESULTS_FILE = PROJECT_DIR / "results" / "baseline_comparison_results.csv"
+RESULTS_FILE = mlrunner.RESULTS_DIR / "baseline_comparison_results.csv"
 FIG_FILE = ROOT_DIR / "fig" / "online_baseline_comparison.tex"
 
 

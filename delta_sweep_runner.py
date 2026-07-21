@@ -8,7 +8,7 @@ import bandit
 import mlrunner
 
 PROJECT_DIR = Path(__file__).resolve().parent
-RESULTS_FILE = PROJECT_DIR / "results" / "delta_sweep_results.csv"
+RESULTS_FILE = mlrunner.RESULTS_DIR / "delta_sweep_results.csv"
 
 T_FIXED = 200_000
 K = 10
@@ -29,6 +29,11 @@ def configure(mu, delta_k, repeat_id):
     bandit.mu = np.asarray(mu, dtype=float)
     bandit.mu_non_target = bandit.mu[:-1].tolist()
     bandit.mu_target = float(delta_k)
+    # This is a controlled synthetic Delta_K sweep: the target mean is
+    # deliberately overwritten, so no fixed MovieLens target array can have
+    # the prescribed mean.  The main MovieLens experiments use empirical data.
+    bandit.reward_source = "bernoulli"
+    bandit.empirical_reward_arrays = None
     bandit.N0_i = 5
     bandit.seed = SEED + 10_000 * repeat_id
     bandit.fake_reward_target = 1.0

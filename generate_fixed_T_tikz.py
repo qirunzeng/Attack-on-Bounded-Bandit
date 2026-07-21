@@ -3,10 +3,12 @@ import math
 from collections import defaultdict
 from pathlib import Path
 
+import mlrunner
+
 PROJECT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = PROJECT_DIR.parent
-RESULTS_FILE = PROJECT_DIR / "results" / "ml_fixed_T_results.csv"
-BASELINE_RESULTS_FILE = PROJECT_DIR / "results" / "ml_fixed_T_baseline_results.csv"
+RESULTS_FILE = mlrunner.RESULTS_DIR / "ml_fixed_T_results.csv"
+BASELINE_RESULTS_FILE = mlrunner.RESULTS_DIR / "ml_fixed_T_baseline_results.csv"
 FIG_FILE = ROOT_DIR / "fig" / "fixed_T_sweep.tex"
 TS_FIG_FILE = ROOT_DIR / "fig" / "fixed_T_sweep_ts.tex"
 FRAGMENT_DIR = ROOT_DIR / "fig" / "fragments"

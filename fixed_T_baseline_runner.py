@@ -7,7 +7,7 @@ import numpy as np
 import mlrunner
 
 PROJECT_DIR = Path(__file__).resolve().parent
-RESULTS_DIR = PROJECT_DIR / "results"
+RESULTS_DIR = mlrunner.RESULTS_DIR
 RESULTS_FILE = RESULTS_DIR / "ml_fixed_T_baseline_results.csv"
 
 NUM_REPEATS = mlrunner.NUM_REPEATS
@@ -29,7 +29,7 @@ def initial_arm(t, K_value):
     return t - 1 if t <= K_value else None
 
 
-def simulate_jun_ucb(mu, T, repeat_id):
+def simulate_jun_ucb(reward_arrays, T, repeat_id):
     rng = np.random.default_rng(SEED + 500_000 * repeat_id + T)
     counts = np.zeros(K, dtype=int)
     sums = np.zeros(K, dtype=float)
@@ -47,7 +47,9 @@ def simulate_jun_ucb(mu, T, repeat_id):
             index = means + 3.0 * SIGMA * np.sqrt(math.log(t) / np.maximum(counts, 1))
             arm = int(np.argmax(index))
 
-        reward0 = 1.0 if rng.random() < mu[arm] else 0.0
+        # Previous Scheme A:
+        # reward0 = 1.0 if rng.random() < mu[arm] else 0.0
+        reward0 = mlrunner.draw_empirical_reward(reward_arrays, rng, arm)
         alpha_req = 0.0
         if arm != K - 1 and counts[K - 1] > 0:
             target_mean = sums[K - 1] / counts[K - 1]
@@ -78,7 +80,7 @@ def simulate_jun_ucb(mu, T, repeat_id):
     }
 
 
-def simulate_zuo_ts(mu, T, repeat_id):
+def simulate_zuo_ts(reward_arrays, T, repeat_id):
     rng = np.random.default_rng(SEED + 600_000 * repeat_id + T)
     counts = np.zeros(K, dtype=int)
     sums = np.zeros(K, dtype=float)
@@ -97,7 +99,9 @@ def simulate_zuo_ts(mu, T, repeat_id):
             samples = rng.normal(loc=means, scale=1.0 / np.sqrt(np.maximum(counts, 1)))
             arm = int(np.argmax(samples))
 
-        reward0 = 1.0 if rng.random() < mu[arm] else 0.0
+        # Previous Scheme A:
+        # reward0 = 1.0 if rng.random() < mu[arm] else 0.0
+        reward0 = mlrunner.draw_empirical_reward(reward_arrays, rng, arm)
         alpha_req = 0.0
         if arm != K - 1 and counts[K - 1] > 0:
             target_mean = sums[K - 1] / counts[K - 1]
@@ -130,7 +134,7 @@ def simulate_zuo_ts(mu, T, repeat_id):
     }
 
 
-def xu2021_phase_cost(mu_target, T, repeat_id, learner):
+def xu2021_phase_cost(mu_target, reward_arrays, T, repeat_id, learner):
     phase = math.ceil(K * math.log(T) / (mu_target**2))
     native_cost = 2 * phase
     sample_equivalent_cost = 2 * K * phase
@@ -140,8 +144,6 @@ def xu2021_phase_cost(mu_target, T, repeat_id, learner):
     target_ratio = ""
     post_phase_ratio = ""
     if feasible:
-        metadata = mlrunner.load_movielens()
-        mu = np.asarray(metadata["mu"], dtype=float)
         rng = np.random.default_rng(SEED + 700_000 * repeat_id + T + (0 if learner == "UCB" else 1))
         counts = np.zeros(K, dtype=int)
         successes = np.zeros(K, dtype=float)
@@ -162,7 +164,9 @@ def xu2021_phase_cost(mu_target, T, repeat_id, learner):
             elif t <= native_cost:
                 reward = 1.0 if arm == K - 1 else 0.0
             else:
-                reward = 1.0 if rng.random() < mu[arm] else 0.0
+                # Previous Scheme A:
+                # reward = 1.0 if rng.random() < mu[arm] else 0.0
+                reward = mlrunner.draw_empirical_reward(reward_arrays, rng, arm)
             counts[arm] += 1
             successes[arm] += reward
             if arm == K - 1:
@@ -213,13 +217,14 @@ def write_results(rows):
 def Main():
     metadata = mlrunner.load_movielens()
     mu = metadata["mu"]
+    reward_arrays = metadata["selected_reward_arrays"]
     rows = []
     for repeat_id in range(NUM_REPEATS):
         for T in T_GRID:
-            rows.append(simulate_jun_ucb(mu, T, repeat_id))
-            rows.append(simulate_zuo_ts(mu, T, repeat_id))
-            rows.append(xu2021_phase_cost(float(mu[-1]), T, repeat_id, "UCB"))
-            rows.append(xu2021_phase_cost(float(mu[-1]), T, repeat_id, "TS"))
+            rows.append(simulate_jun_ucb(reward_arrays, T, repeat_id))
+            rows.append(simulate_zuo_ts(reward_arrays, T, repeat_id))
+            rows.append(xu2021_phase_cost(float(mu[-1]), reward_arrays, T, repeat_id, "UCB"))
+            rows.append(xu2021_phase_cost(float(mu[-1]), reward_arrays, T, repeat_id, "TS"))
 
     for row in rows:
         row.setdefault("sample_equivalent_cost", "")

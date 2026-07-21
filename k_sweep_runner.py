@@ -8,7 +8,7 @@ import bandit
 import mlrunner
 
 PROJECT_DIR = Path(__file__).resolve().parent
-RESULTS_DIR = PROJECT_DIR / "results"
+RESULTS_DIR = mlrunner.RESULTS_DIR
 RESULTS_FILE = RESULTS_DIR / "k_sweep_results.csv"
 
 T_FIXED = 200_000
@@ -21,7 +21,10 @@ R_U = 1.0
 SIGMA = 0.5
 DELTA = 0.05
 N0_I = 5
-def configure(K, mu, repeat_id):
+
+
+def configure(K, metadata, repeat_id):
+    mu = metadata["mu"]
     bandit.K = K
     bandit.target_arm = K
     bandit.delta = DELTA
@@ -33,6 +36,9 @@ def configure(K, mu, repeat_id):
     bandit.mu = np.asarray(mu, dtype=float)
     bandit.mu_non_target = bandit.mu[:-1].tolist()
     bandit.mu_target = float(bandit.mu[-1])
+    bandit.reward_distribution = mlrunner.reward_distribution
+    bandit.reward_source = "empirical"
+    bandit.empirical_reward_arrays = metadata["selected_reward_arrays"]
     bandit.N0_i = N0_I
     bandit.seed = SEED + 10_000 * repeat_id + K
     bandit.fake_reward_target = R_U
@@ -129,7 +135,7 @@ def Main():
     for repeat_id in range(NUM_REPEATS):
         for K in K_GRID:
             metadata = instances[K]
-            configure(K, metadata["mu"], repeat_id)
+            configure(K, metadata, repeat_id)
             clean_sum, clean_mean = sample_clean_warm_start(metadata, K, repeat_id)
             for result in [
                 bandit.UCB_fixed_T(clean_sum, clean_mean, T_FIXED),
@@ -145,7 +151,7 @@ def Main():
 
     print("Bounded offline attack K-sweep")
     print(f"T = {T_FIXED}, K_grid = {K_GRID}, repeats = {NUM_REPEATS}")
-    print(f"instance = MovieLens-1M, N0_i = {N0_I}")
+    print(f"instance = {mlrunner.DATASET_LABEL}, N0_i = {N0_I}")
     print(f"target_mu = {instances[K_GRID[0]]['mu'][-1]:.12g}")
     print(f"wrote {RESULTS_FILE}")
     for K in K_GRID:

@@ -1,6 +1,9 @@
 import csv
 import json
+import os
+import sys
 from collections import defaultdict
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -15,11 +18,15 @@ r_l = 0.0
 r_u = 1.0
 R = r_u - r_l
 
-binary_like_threshold = 4
-reward_distribution = "Bernoulli(mu_i), mu_i = MovieLens positive-rating rate"
+# Previous Scheme A (kept for reproducibility/reference):
+# binary_like_threshold = 4
+# reward_distribution = "Bernoulli(mu_i), mu_i = MovieLens positive-rating rate"
+reward_distribution = "empirical MovieLens rating distribution normalized to [0, 1]"
 sigma = 0.5
 N0_i = 5
-clean_offline_mode = "sample N0_i binary MovieLens ratings with fixed seed"
+# Previous Scheme A:
+# clean_offline_mode = "sample N0_i binary MovieLens ratings with fixed seed"
+clean_offline_mode = "sample N0_i normalized empirical MovieLens ratings with fixed seed"
 seed = 2026
 
 fake_reward_target = r_u
@@ -31,64 +38,126 @@ NUM_REPEATS = 10
 TARGET_MIN_COUNT = 1
 
 PROJECT_DIR = Path(__file__).resolve().parent
-DATA_DIR = PROJECT_DIR / "ml-1m"
-RATINGS_FILE = DATA_DIR / "ratings.dat"
-MOVIES_FILE = DATA_DIR / "movies.dat"
-RESULTS_DIR = PROJECT_DIR / "results"
+# Previous MovieLens-1M-only paths:
+# DATA_DIR = PROJECT_DIR / "ml-1m"
+# RATINGS_FILE = DATA_DIR / "ratings.dat"
+# MOVIES_FILE = DATA_DIR / "movies.dat"
+MOVIELENS_DATASET = os.environ.get("MOVIELENS_DATASET", "25m").lower().removeprefix("ml-")
+if MOVIELENS_DATASET not in {"1m", "25m"}:
+    raise ValueError("MOVIELENS_DATASET must be '1m', 'ml-1m', '25m', or 'ml-25m'.")
+DATASET_DIR_NAME = f"ml-{MOVIELENS_DATASET}"
+DATASET_LABEL = f"MovieLens-{MOVIELENS_DATASET.upper()}"
+DATA_DIR = PROJECT_DIR / DATASET_DIR_NAME
+RATINGS_FILE = DATA_DIR / ("ratings.dat" if MOVIELENS_DATASET == "1m" else "ratings.csv")
+MOVIES_FILE = DATA_DIR / ("movies.dat" if MOVIELENS_DATASET == "1m" else "movies.csv")
+RESULTS_DIR = PROJECT_DIR / "results" / DATASET_DIR_NAME
 RESULTS_FILE = RESULTS_DIR / "ml_fixed_T_results.csv"
 
 movie_selection_mode = "top_K_minus_1_by_rating_count_plus_lowest_positive_mu_target"
 
 
-def load_movielens(K_value=K):
-    data_dir = DATA_DIR
-    ratings_file = RATINGS_FILE
-    movies_file = MOVIES_FILE
-
+def _dataset_paths(dataset):
+    data_dir = PROJECT_DIR / f"ml-{dataset}"
+    ratings_file = data_dir / ("ratings.dat" if dataset == "1m" else "ratings.csv")
+    movies_file = data_dir / ("movies.dat" if dataset == "1m" else "movies.csv")
     if not ratings_file.exists():
-        alt_data_dir = PROJECT_DIR / "m1-1m"
-        alt_ratings_file = alt_data_dir / "ratings.dat"
-        alt_movies_file = alt_data_dir / "movies.dat"
-        if alt_ratings_file.exists():
-            data_dir = alt_data_dir
-            ratings_file = alt_ratings_file
-            movies_file = alt_movies_file
-        else:
-            raise FileNotFoundError(
-                f"Cannot find ratings.dat at {RATINGS_FILE} or {PROJECT_DIR / 'm1-1m' / 'ratings.dat'}."
-            )
+        raise FileNotFoundError(f"Cannot find {ratings_file}.")
+    return data_dir, ratings_file, movies_file
+
+
+def _rating_bounds(dataset):
+    return (1.0, 5.0) if dataset == "1m" else (0.5, 5.0)
+
+
+@lru_cache(maxsize=None)
+def _load_movielens_base(dataset):
+    """Read a MovieLens release once; compact half-star values into bytearrays."""
+    data_dir, ratings_file, movies_file = _dataset_paths(dataset)
+    rating_min, rating_max = _rating_bounds(dataset)
 
     movie_titles = {}
-    if movies_file.exists():
+    if movies_file.exists() and dataset == "1m":
         with movies_file.open("r", encoding="latin-1", errors="replace") as f:
             for line in f:
-                parts = line.rstrip("\n").split("::")
+                parts = line.rstrip("\n").split("::", 2)
                 if len(parts) >= 2:
                     movie_titles[int(parts[0])] = parts[1]
+    elif movies_file.exists():
+        with movies_file.open("r", encoding="utf-8", newline="") as f:
+            for row in csv.DictReader(f):
+                movie_titles[int(row["movieId"])] = row["title"]
 
-    movie_binary_rewards = defaultdict(list)
-    with ratings_file.open("r", encoding="latin-1", errors="replace") as f:
-        for line in f:
-            parts = line.rstrip("\n").split("::")
-            if len(parts) != 4:
-                raise ValueError(f"Bad ratings.dat row: {line!r}")
-            movie_id = int(parts[1])
-            rating = int(parts[2])
-            movie_binary_rewards[movie_id].append(1 if rating >= binary_like_threshold else 0)
+    # Store rating*2 as one byte.  This keeps all 25M empirical rewards in
+    # roughly 25 MB instead of retaining 25M Python float objects.
+    movie_encoded_rewards = defaultdict(bytearray)
+    movie_count_and_encoded_sum = defaultdict(lambda: [0, 0])
+
+    def add_rating(movie_id, rating):
+        encoded = int(round(2.0 * rating))
+        if abs(encoded / 2.0 - rating) > 1e-12 or not (2.0 * rating_min <= encoded <= 2.0 * rating_max):
+            raise ValueError(f"Unsupported MovieLens rating {rating!r} for {dataset}.")
+        movie_encoded_rewards[movie_id].append(encoded)
+        stats = movie_count_and_encoded_sum[movie_id]
+        stats[0] += 1
+        stats[1] += encoded
+
+    if dataset == "1m":
+        with ratings_file.open("r", encoding="latin-1", errors="replace") as f:
+            for line in f:
+                parts = line.rstrip("\n").split("::")
+                if len(parts) != 4:
+                    raise ValueError(f"Bad ratings.dat row: {line!r}")
+                add_rating(int(parts[1]), float(parts[2]))
+    else:
+        with ratings_file.open("r", encoding="utf-8", newline="") as f:
+            header = f.readline().rstrip("\r\n")
+            if header != "userId,movieId,rating,timestamp":
+                raise ValueError(f"Unexpected ratings.csv header: {header!r}")
+            # ratings.csv contains four numeric, unquoted columns.  Avoid the
+            # per-row DictReader overhead across 25M rows; movies.csv still
+            # uses the full CSV parser because titles can contain commas.
+            for line in f:
+                _, movie_id_text, rating_text, _ = line.rstrip("\r\n").split(",")
+                movie_id = int(movie_id_text)
+                encoded = int(round(2.0 * float(rating_text)))
+                if not (2.0 * rating_min <= encoded <= 2.0 * rating_max):
+                    raise ValueError(f"Unsupported MovieLens rating {rating_text!r} for {dataset}.")
+                movie_encoded_rewards[movie_id].append(encoded)
+                stats = movie_count_and_encoded_sum[movie_id]
+                stats[0] += 1
+                stats[1] += encoded
+
+    return {
+        "data_dir": data_dir,
+        "movie_titles": movie_titles,
+        "movie_encoded_rewards": dict(movie_encoded_rewards),
+        "movie_count_and_encoded_sum": dict(movie_count_and_encoded_sum),
+        "rating_min": rating_min,
+        "rating_max": rating_max,
+    }
+
+
+def load_movielens(K_value=K, dataset=None):
+    dataset = MOVIELENS_DATASET if dataset is None else dataset.lower().removeprefix("ml-")
+    if dataset not in {"1m", "25m"}:
+        raise ValueError("dataset must be '1m', 'ml-1m', '25m', or 'ml-25m'.")
+    base = _load_movielens_base(dataset)
+    rating_min = base["rating_min"]
+    rating_range = base["rating_max"] - rating_min
 
     movie_stats = []
-    for movie_id, rewards in movie_binary_rewards.items():
-        count_i = len(rewards)
-        sum_i = int(sum(rewards))
-        mu_i = sum_i / count_i
-        movie_stats.append((movie_id, count_i, sum_i, mu_i))
+    for movie_id, (count_i, encoded_sum_i) in base["movie_count_and_encoded_sum"].items():
+        normalized_sum_i = encoded_sum_i / 2.0 - count_i * rating_min
+        normalized_sum_i /= rating_range
+        mu_i = normalized_sum_i / count_i
+        movie_stats.append((movie_id, count_i, normalized_sum_i, mu_i))
 
     if len(movie_stats) < K_value:
         raise ValueError(f"MovieLens has {len(movie_stats)} movies, fewer than K={K_value}.")
 
-    target_candidates = [row for row in movie_stats if row[3] > 0]
+    target_candidates = [row for row in movie_stats if row[1] >= TARGET_MIN_COUNT and row[3] > 0]
     if not target_candidates:
-        raise ValueError("No MovieLens movie has positive empirical positive-rating rate.")
+        raise ValueError("No MovieLens movie has a positive normalized empirical mean.")
 
     target_row = min(target_candidates, key=lambda row: (row[3], -row[1], row[0]))
     non_target_candidates = [row for row in movie_stats if row[0] != target_row[0]]
@@ -97,7 +166,7 @@ def load_movielens(K_value=K):
     selected_arms = sorted(selected_by_count, key=lambda row: (-row[3], -row[1], row[0]))
     selected_movie_ids = [row[0] for row in selected_arms]
     selected_counts = np.array([row[1] for row in selected_arms], dtype=int)
-    selected_binary_sums = np.array([row[2] for row in selected_arms], dtype=int)
+    selected_reward_sums = np.array([row[2] for row in selected_arms], dtype=float)
     mu = np.array([row[3] for row in selected_arms], dtype=float)
 
     if not np.all(mu[:-1] >= mu[1:] - 1e-15):
@@ -107,20 +176,34 @@ def load_movielens(K_value=K):
 
     selected_reward_arrays = []
     for movie_id in selected_movie_ids:
-        rewards_i = np.array(movie_binary_rewards[movie_id], dtype=float)
+        encoded = base["movie_encoded_rewards"][movie_id]
+        ratings_i = np.frombuffer(encoded, dtype=np.uint8).astype(float) / 2.0
+        rewards_i = (ratings_i - rating_min) / rating_range
         selected_reward_arrays.append(rewards_i)
     metadata = {
-        "data_dir": str(data_dir),
-        "movie_titles": movie_titles,
+        "dataset": dataset,
+        "dataset_label": f"MovieLens-{dataset.upper()}",
+        "data_dir": str(base["data_dir"]),
+        "movie_titles": base["movie_titles"],
         "selected_movie_ids": selected_movie_ids,
         "selected_counts": selected_counts,
-        "selected_binary_sums": selected_binary_sums,
+        "selected_reward_sums": selected_reward_sums,
         "selected_reward_arrays": selected_reward_arrays,
         "mu": mu,
+        "rating_min": base["rating_min"],
+        "rating_max": base["rating_max"],
+        "reward_source": "empirical_normalized_rating_with_replacement",
         "target_min_count": TARGET_MIN_COUNT,
         "target_selection": "smallest positive empirical mean",
     }
     return metadata
+
+
+def draw_empirical_reward(reward_arrays, rng, arm):
+    rewards = reward_arrays[arm]
+    if len(rewards) == 0:
+        raise ValueError(f"Arm {arm} has no empirical rewards.")
+    return float(rewards[rng.integers(0, len(rewards))])
 
 
 def sample_clean_warm_start(metadata, repeat_id):
@@ -134,7 +217,8 @@ def sample_clean_warm_start(metadata, repeat_id):
     return clean_sum, clean_mean
 
 
-def configure_bandit(mu, repeat_id):
+def configure_bandit(metadata, repeat_id):
+    mu = metadata["mu"]
     bandit.K = K
     bandit.target_arm = target_arm
     bandit.delta = delta
@@ -143,6 +227,8 @@ def configure_bandit(mu, repeat_id):
     bandit.r_u = r_u
     bandit.R = R
     bandit.reward_distribution = reward_distribution
+    bandit.reward_source = "empirical"
+    bandit.empirical_reward_arrays = metadata["selected_reward_arrays"]
     bandit.sigma = sigma
     bandit.mu_non_target = mu[:-1].tolist()
     bandit.mu_target = float(mu[-1])
@@ -234,14 +320,16 @@ def validate_results(rows):
 
 
 def Main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")
     metadata = load_movielens()
 
     rows = []
     clean_summaries = []
     for repeat_id in range(NUM_REPEATS):
-        configure_bandit(metadata["mu"], repeat_id)
+        configure_bandit(metadata, repeat_id)
         clean_sum, clean_mean = sample_clean_warm_start(metadata, repeat_id)
-        clean_summaries.append(clean_sum.astype(int).tolist())
+        clean_summaries.append(clean_sum.tolist())
         clean_ucb_rows = bandit.simulate_clean_fixed_T_grid(clean_sum, clean_mean, T_GRID, "UCB clean", 303)
         clean_ts_rows = bandit.simulate_clean_fixed_T_grid(clean_sum, clean_mean, T_GRID, "TS clean", 404)
         for T in T_GRID:
@@ -261,13 +349,15 @@ def Main():
     write_results(rows)
 
     print("=" * 100)
-    print("Bounded Attack on Stochastic Warm-Start Bandits: MovieLens-1M Fixed-T Sweep")
+    print(f"Bounded Attack on Stochastic Warm-Start Bandits: {DATASET_LABEL} Fixed-T Sweep")
     print("=" * 100)
     print(f"data_dir = {metadata['data_dir']}")
     print(f"movie_selection_mode = {movie_selection_mode}")
     print("target_selection = smallest positive empirical mean")
     print(f"reward_distribution = {reward_distribution}")
-    print(f"binary_like_threshold = {binary_like_threshold}")
+    print(f"reward_source = {metadata['reward_source']}")
+    print(f"rating_normalization = (rating - {metadata['rating_min']}) / "
+          f"({metadata['rating_max']} - {metadata['rating_min']})")
     print(f"K = {K}, target_arm = {target_arm}, delta = {delta}, xi = {xi}")
     print(f"r_l = {r_l}, r_u = {r_u}, R = {R}, sigma = {sigma}")
     print(f"N0_i = {N0_i}, clean_offline_mode = {clean_offline_mode}, seed = {seed}")
@@ -284,7 +374,7 @@ def Main():
         print(
             f"arm_{idx}: movie_id={movie_id}, title={title}, "
             f"rating_count={int(metadata['selected_counts'][idx - 1])}, "
-            f"binary_sum={int(metadata['selected_binary_sums'][idx - 1])}, "
+            f"normalized_reward_sum={metadata['selected_reward_sums'][idx - 1]:.6f}, "
             f"mu_{idx}={metadata['mu'][idx - 1]:.6f}{marker}"
         )
     print("-" * 100)

@@ -8,7 +8,7 @@ import bandit
 import mlrunner
 
 PROJECT_DIR = Path(__file__).resolve().parent
-RESULTS_DIR = PROJECT_DIR / "results"
+RESULTS_DIR = mlrunner.RESULTS_DIR
 RESULTS_FILE = RESULTS_DIR / "baseline_comparison_results.csv"
 
 T_FIXED = 200_000
@@ -29,7 +29,8 @@ def beta(K, n):
     return math.sqrt((2.0 * SIGMA * SIGMA / n) * math.log((math.pi ** 2) * K * (n ** 2) / (3.0 * DELTA)))
 
 
-def configure_offline(K, mu, repeat_id):
+def configure_offline(K, metadata, repeat_id):
+    mu = metadata["mu"]
     bandit.K = K
     bandit.target_arm = K
     bandit.delta = DELTA
@@ -41,6 +42,9 @@ def configure_offline(K, mu, repeat_id):
     bandit.mu = np.asarray(mu, dtype=float)
     bandit.mu_non_target = bandit.mu[:-1].tolist()
     bandit.mu_target = float(bandit.mu[-1])
+    bandit.reward_distribution = mlrunner.reward_distribution
+    bandit.reward_source = "empirical"
+    bandit.empirical_reward_arrays = metadata["selected_reward_arrays"]
     bandit.N0_i = N0_I
     bandit.seed = SEED + 10_000 * repeat_id + K
     bandit.fake_reward_target = R_U
@@ -60,7 +64,7 @@ def sample_clean_warm_start(metadata, K, repeat_id):
 
 
 def offline_original(K, mu, metadata, repeat_id, algorithm):
-    configure_offline(K, mu, repeat_id)
+    configure_offline(K, metadata, repeat_id)
     clean_sum, clean_mean = sample_clean_warm_start(metadata, K, repeat_id)
     if algorithm == "UCB":
         result = bandit.UCB_direct_fixed_T(clean_sum, clean_mean, T_FIXED)
@@ -87,7 +91,7 @@ def initial_arm(t, K):
     return t - 1 if t <= K else None
 
 
-def simulate_jun_ucb(K, mu, repeat_id):
+def simulate_jun_ucb(K, reward_arrays, repeat_id):
     rng = np.random.default_rng(SEED + 200_000 * repeat_id + K)
     counts = np.zeros(K, dtype=int)
     sums = np.zeros(K, dtype=float)
@@ -105,7 +109,9 @@ def simulate_jun_ucb(K, mu, repeat_id):
             index = means + 3.0 * SIGMA * np.sqrt(math.log(t) / np.maximum(counts, 1))
             arm = int(np.argmax(index))
 
-        reward0 = 1.0 if rng.random() < mu[arm] else 0.0
+        # Previous Scheme A:
+        # reward0 = 1.0 if rng.random() < mu[arm] else 0.0
+        reward0 = mlrunner.draw_empirical_reward(reward_arrays, rng, arm)
         alpha_req = 0.0
         if arm != K - 1 and counts[K - 1] > 0:
             target_mean = sums[K - 1] / counts[K - 1]
@@ -139,7 +145,7 @@ def simulate_jun_ucb(K, mu, repeat_id):
     }
 
 
-def simulate_zuo_ts(K, mu, repeat_id):
+def simulate_zuo_ts(K, reward_arrays, repeat_id):
     rng = np.random.default_rng(SEED + 300_000 * repeat_id + K)
     counts = np.zeros(K, dtype=int)
     sums = np.zeros(K, dtype=float)
@@ -158,7 +164,9 @@ def simulate_zuo_ts(K, mu, repeat_id):
             samples = rng.normal(loc=means, scale=1.0 / np.sqrt(np.maximum(counts, 1)))
             arm = int(np.argmax(samples))
 
-        reward0 = 1.0 if rng.random() < mu[arm] else 0.0
+        # Previous Scheme A:
+        # reward0 = 1.0 if rng.random() < mu[arm] else 0.0
+        reward0 = mlrunner.draw_empirical_reward(reward_arrays, rng, arm)
         alpha_req = 0.0
         if arm != K - 1 and counts[K - 1] > 0:
             target_mean = sums[K - 1] / counts[K - 1]
@@ -194,7 +202,7 @@ def simulate_zuo_ts(K, mu, repeat_id):
     }
 
 
-def xu2021_phase_cost(K, mu, repeat_id, learner):
+def xu2021_phase_cost(K, mu, reward_arrays, repeat_id, learner):
     phase = math.ceil(K * math.log(T_FIXED) / (float(mu[-1]) ** 2))
     c1 = phase
     c2 = phase
@@ -250,8 +258,10 @@ def xu2021_phase_cost(K, mu, repeat_id, learner):
             elif t <= native_cost:
                 reward = 1.0 if arm == target_index else 0.0
             else:
-                mean = float(mu[arm])
-                reward = 1.0 if rng.random() < mean else 0.0
+                # Previous Scheme A:
+                # mean = float(mu[arm])
+                # reward = 1.0 if rng.random() < mean else 0.0
+                reward = mlrunner.draw_empirical_reward(reward_arrays, rng, arm)
 
             counts[arm] += 1
             successes[arm] += reward
@@ -313,19 +323,20 @@ def Main():
         for K in K_GRID:
             metadata = instances[K]
             mu = metadata["mu"]
+            reward_arrays = metadata["selected_reward_arrays"]
             rows.append(offline_original(K, mu, metadata, repeat_id, "UCB"))
             rows.append(offline_original(K, mu, metadata, repeat_id, "TS"))
-            rows.append(simulate_jun_ucb(K, mu, repeat_id))
-            rows.append(simulate_zuo_ts(K, mu, repeat_id))
-            rows.append(xu2021_phase_cost(K, mu, repeat_id, "UCB"))
-            rows.append(xu2021_phase_cost(K, mu, repeat_id, "TS"))
+            rows.append(simulate_jun_ucb(K, reward_arrays, repeat_id))
+            rows.append(simulate_zuo_ts(K, reward_arrays, repeat_id))
+            rows.append(xu2021_phase_cost(K, mu, reward_arrays, repeat_id, "UCB"))
+            rows.append(xu2021_phase_cost(K, mu, reward_arrays, repeat_id, "TS"))
 
     for row in rows:
         row.setdefault("post_phase_ratio", "")
     write_results(rows)
     print("Online baseline comparison")
     print(f"T = {T_FIXED}, K_grid = {K_GRID}, repeats = {NUM_REPEATS}")
-    print(f"instance = MovieLens-1M, target_mu = {instances[K_GRID[0]]['mu'][-1]:.12g}")
+    print(f"instance = {mlrunner.DATASET_LABEL}, target_mu = {instances[K_GRID[0]]['mu'][-1]:.12g}")
     print(f"wrote {RESULTS_FILE}")
     for K in K_GRID:
         print(f"\n[K = {K}]")
