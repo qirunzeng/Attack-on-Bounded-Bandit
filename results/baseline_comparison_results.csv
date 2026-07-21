@@ -1,0 +1,421 @@
+algorithm,repeat,K,T,status,cost,native_cost,cost_definition,target_ratio,post_phase_ratio,target_pulls,non_target_pulls,clipped_cost,requested_cost
+Our offline UCB,0,5,200000,ok,27864.0,27864.0,injected samples,1.0,,172111,0,0.0,27864.0
+Our offline TS,0,5,200000,ok,41979.0,41979.0,injected samples,1.0,,157996,0,0.0,41979.0
+Jun2018 clipped UCB,0,5,200000,failed,80908,80908,online reward-lowering modification count clipped at r_l,0.50689,,101378,98622,36334922.99122298,36415830.99122293
+Zuo2024 clipped TS,0,5,200000,failed,47332,47332,online reward-lowering modification count clipped at r_l,0.712235,,142447,57553,8.035799735170766e+17,8.035799735171218e+17
+Xu2021 observation-free UCB,0,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,0,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,0,10,200000,ok,36879.0,36879.0,injected samples,1.0,,163071,0,0.0,36879.0
+Our offline TS,0,10,200000,ok,53611.0,53611.0,injected samples,1.0,,146339,0,0.0,53611.0
+Jun2018 clipped UCB,0,10,200000,failed,120901,120901,online reward-lowering modification count clipped at r_l,0.235995,,47199,152801,57642381.64828907,57763282.64828898
+Zuo2024 clipped TS,0,10,200000,failed,86012,86012,online reward-lowering modification count clipped at r_l,0.456765,,91353,108647,1.2727910171753513e+18,1.2727910171754388e+18
+Xu2021 observation-free UCB,0,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,0,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,0,15,200000,ok,42836.0,42836.0,injected samples,1.0,,157089,0,0.0,42836.0
+Our offline TS,0,15,200000,ok,61258.0,61258.0,injected samples,1.0,,138667,0,0.0,61258.0
+Jun2018 clipped UCB,0,15,200000,failed,136453,136453,online reward-lowering modification count clipped at r_l,0.15174,,30348,169652,56272924.880466424,56409377.88046654
+Zuo2024 clipped TS,0,15,200000,failed,112919,112919,online reward-lowering modification count clipped at r_l,0.297985,,59597,140403,1.3664577722047834e+18,1.366457772204894e+18
+Xu2021 observation-free UCB,0,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,0,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,0,20,200000,ok,47437.0,47437.0,injected samples,1.0,,152463,0,0.0,47437.0
+Our offline TS,0,20,200000,ok,67138.0,67138.0,injected samples,1.0,,132762,0,0.0,67138.0
+Jun2018 clipped UCB,0,20,200000,failed,146005,146005,online reward-lowering modification count clipped at r_l,0.10034,,20068,179932,56300789.87521626,56446794.875216365
+Zuo2024 clipped TS,0,20,200000,failed,135216,135216,online reward-lowering modification count clipped at r_l,0.16408,,32816,167184,1.4276578388771556e+18,1.4276578388772954e+18
+Xu2021 observation-free UCB,0,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,0,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,0,30,200000,ok,54346.0,54346.0,injected samples,1.0,,145504,0,0.0,54346.0
+Our offline TS,0,30,200000,ok,76026.0,76026.0,injected samples,1.0,,123824,0,0.0,76026.0
+Jun2018 clipped UCB,0,30,200000,failed,149243,149243,online reward-lowering modification count clipped at r_l,0.061325,,12265,187735,51522308.22259306,51671551.22259297
+Zuo2024 clipped TS,0,30,200000,failed,143263,143263,online reward-lowering modification count clipped at r_l,0.098935,,19787,180213,1.086876395853088e+18,1.0868763958532257e+18
+Xu2021 observation-free UCB,0,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,0,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,0,40,200000,ok,59908.0,59908.0,injected samples,1.0,,139892,0,0.0,59908.0
+Our offline TS,0,40,200000,ok,83003.0,83003.0,injected samples,1.0,,116797,0,0.0,83003.0
+Jun2018 clipped UCB,0,40,200000,failed,151235,151235,online reward-lowering modification count clipped at r_l,0.04084,,8168,191832,47603980.95821671,47755215.95821662
+Zuo2024 clipped TS,0,40,200000,failed,149401,149401,online reward-lowering modification count clipped at r_l,0.05452,,10904,189096,8.898969954296061e+17,8.898969954297597e+17
+Xu2021 observation-free UCB,0,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,0,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,0,50,200000,ok,64476.0,64476.0,injected samples,1.0,,135274,0,0.0,64476.0
+Our offline TS,0,50,200000,ok,88717.0,88717.0,injected samples,1.0,,111033,0,0.0,88717.0
+Jun2018 clipped UCB,0,50,200000,failed,149655,149655,online reward-lowering modification count clipped at r_l,0.032905,,6581,193419,44300872.621750474,44450527.621750884
+Zuo2024 clipped TS,0,50,200000,failed,147979,147979,online reward-lowering modification count clipped at r_l,0.046275,,9255,190745,7.207182302939459e+17,7.207182302940968e+17
+Xu2021 observation-free UCB,0,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,0,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Our offline UCB,1,5,200000,ok,27881.0,27881.0,injected samples,1.0,,172094,0,0.0,27881.0
+Our offline TS,1,5,200000,ok,41992.0,41992.0,injected samples,1.0,,157983,0,0.0,41992.0
+Jun2018 clipped UCB,1,5,200000,failed,81420,81420,online reward-lowering modification count clipped at r_l,0.50304,,100608,99392,38334648.07139315,38416068.07139308
+Zuo2024 clipped TS,1,5,200000,failed,47021,47021,online reward-lowering modification count clipped at r_l,0.712905,,142581,57419,7.998430584497101e+17,7.998430584497563e+17
+Xu2021 observation-free UCB,1,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,1,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,1,10,200000,ok,36893.0,36893.0,injected samples,1.0,,163057,0,0.0,36893.0
+Our offline TS,1,10,200000,ok,53622.0,53622.0,injected samples,1.0,,146328,0,0.0,53622.0
+Jun2018 clipped UCB,1,10,200000,failed,122308,122308,online reward-lowering modification count clipped at r_l,0.229955,,45991,154009,60002124.454477146,60124432.45447715
+Zuo2024 clipped TS,1,10,200000,failed,86582,86582,online reward-lowering modification count clipped at r_l,0.453605,,90721,109279,1.2876627995500096e+18,1.287662799550097e+18
+Xu2021 observation-free UCB,1,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,1,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,1,15,200000,ok,42890.0,42890.0,injected samples,1.0,,157035,0,0.0,42890.0
+Our offline TS,1,15,200000,ok,61298.0,61298.0,injected samples,1.0,,138627,0,0.0,61298.0
+Jun2018 clipped UCB,1,15,200000,failed,137463,137463,online reward-lowering modification count clipped at r_l,0.14437,,28874,171126,58863954.89020631,59001417.89020661
+Zuo2024 clipped TS,1,15,200000,failed,111659,111659,online reward-lowering modification count clipped at r_l,0.307075,,61415,138585,1.3313341989342764e+18,1.3313341989343936e+18
+Xu2021 observation-free UCB,1,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,1,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,1,20,200000,ok,47428.0,47428.0,injected samples,1.0,,152472,0,0.0,47428.0
+Our offline TS,1,20,200000,ok,67131.0,67131.0,injected samples,1.0,,132769,0,0.0,67131.0
+Jun2018 clipped UCB,1,20,200000,failed,145441,145441,online reward-lowering modification count clipped at r_l,0.10215,,20430,179570,57567400.45290717,57712841.45290707
+Zuo2024 clipped TS,1,20,200000,failed,133390,133390,online reward-lowering modification count clipped at r_l,0.176745,,35349,164651,1.3847264749141606e+18,1.384726474914296e+18
+Xu2021 observation-free UCB,1,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,1,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,1,30,200000,ok,54484.0,54484.0,injected samples,1.0,,145366,0,0.0,54484.0
+Our offline TS,1,30,200000,ok,76123.0,76123.0,injected samples,1.0,,123727,0,0.0,76123.0
+Jun2018 clipped UCB,1,30,200000,failed,149802,149802,online reward-lowering modification count clipped at r_l,0.05725,,11450,188550,52362292.796212055,52512094.7962124
+Zuo2024 clipped TS,1,30,200000,failed,142870,142870,online reward-lowering modification count clipped at r_l,0.1007,,20140,179860,1.0826234804272268e+18,1.0826234804273659e+18
+Xu2021 observation-free UCB,1,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,1,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,1,40,200000,ok,59929.0,59929.0,injected samples,1.0,,139871,0,0.0,59929.0
+Our offline TS,1,40,200000,ok,83018.0,83018.0,injected samples,1.0,,116782,0,0.0,83018.0
+Jun2018 clipped UCB,1,40,200000,failed,151369,151369,online reward-lowering modification count clipped at r_l,0.041465,,8293,191707,50354340.14094529,50505709.1409452
+Zuo2024 clipped TS,1,40,200000,failed,148016,148016,online reward-lowering modification count clipped at r_l,0.061295,,12259,187741,8.771739514865993e+17,8.771739514867462e+17
+Xu2021 observation-free UCB,1,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,1,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,1,50,200000,ok,64377.0,64377.0,injected samples,1.0,,135373,0,0.0,64377.0
+Our offline TS,1,50,200000,ok,88648.0,88648.0,injected samples,1.0,,111102,0,0.0,88648.0
+Jun2018 clipped UCB,1,50,200000,failed,149788,149788,online reward-lowering modification count clipped at r_l,0.03069,,6138,193862,45482784.46786988,45632572.467869684
+Zuo2024 clipped TS,1,50,200000,failed,148016,148016,online reward-lowering modification count clipped at r_l,0.0426,,8520,191480,7.263053441951391e+17,7.263053441952841e+17
+Xu2021 observation-free UCB,1,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,1,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Our offline UCB,2,5,200000,ok,27898.0,27898.0,injected samples,1.0,,172077,0,0.0,27898.0
+Our offline TS,2,5,200000,ok,42005.0,42005.0,injected samples,1.0,,157970,0,0.0,42005.0
+Jun2018 clipped UCB,2,5,200000,failed,84111,84111,online reward-lowering modification count clipped at r_l,0.4882,,97640,102360,42042237.16511319,42126348.1651131
+Zuo2024 clipped TS,2,5,200000,failed,45446,45446,online reward-lowering modification count clipped at r_l,0.723845,,144769,55231,7.400601237415479e+17,7.400601237415937e+17
+Xu2021 observation-free UCB,2,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,2,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,2,10,200000,ok,36842.0,36842.0,injected samples,1.0,,163108,0,0.0,36842.0
+Our offline TS,2,10,200000,ok,53584.0,53584.0,injected samples,1.0,,146366,0,0.0,53584.0
+Jun2018 clipped UCB,2,10,200000,failed,120254,120254,online reward-lowering modification count clipped at r_l,0.242435,,48487,151513,56986075.21365348,57106329.21365343
+Zuo2024 clipped TS,2,10,200000,failed,84005,84005,online reward-lowering modification count clipped at r_l,0.471115,,94223,105777,1.2064456972434908e+18,1.2064456972435717e+18
+Xu2021 observation-free UCB,2,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,2,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,2,15,200000,ok,42772.0,42772.0,injected samples,1.0,,157153,0,0.0,42772.0
+Our offline TS,2,15,200000,ok,61211.0,61211.0,injected samples,1.0,,138714,0,0.0,61211.0
+Jun2018 clipped UCB,2,15,200000,failed,137900,137900,online reward-lowering modification count clipped at r_l,0.141885,,28377,171623,63484557.51620411,63622457.516204014
+Zuo2024 clipped TS,2,15,200000,failed,115374,115374,online reward-lowering modification count clipped at r_l,0.28267,,56534,143466,1.4267718328008522e+18,1.4267718328009615e+18
+Xu2021 observation-free UCB,2,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,2,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,2,20,200000,ok,47380.0,47380.0,injected samples,1.0,,152520,0,0.0,47380.0
+Our offline TS,2,20,200000,ok,67097.0,67097.0,injected samples,1.0,,132803,0,0.0,67097.0
+Jun2018 clipped UCB,2,20,200000,failed,146372,146372,online reward-lowering modification count clipped at r_l,0.096425,,19285,180715,59480792.74782942,59627164.747829266
+Zuo2024 clipped TS,2,20,200000,failed,132716,132716,online reward-lowering modification count clipped at r_l,0.182025,,36405,163595,1.3670037745058724e+18,1.367003774506003e+18
+Xu2021 observation-free UCB,2,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,2,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,2,30,200000,ok,54403.0,54403.0,injected samples,1.0,,145447,0,0.0,54403.0
+Our offline TS,2,30,200000,ok,76067.0,76067.0,injected samples,1.0,,123783,0,0.0,76067.0
+Jun2018 clipped UCB,2,30,200000,failed,149048,149048,online reward-lowering modification count clipped at r_l,0.059925,,11985,188015,50906928.34013937,51055976.34013918
+Zuo2024 clipped TS,2,30,200000,failed,139486,139486,online reward-lowering modification count clipped at r_l,0.121765,,24353,175647,1.0325124730289943e+18,1.0325124730291318e+18
+Xu2021 observation-free UCB,2,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,2,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,2,40,200000,ok,59887.0,59887.0,injected samples,1.0,,139913,0,0.0,59887.0
+Our offline TS,2,40,200000,ok,82989.0,82989.0,injected samples,1.0,,116811,0,0.0,82989.0
+Jun2018 clipped UCB,2,40,200000,failed,150975,150975,online reward-lowering modification count clipped at r_l,0.043445,,8689,191311,47573446.44818794,47724421.448187575
+Zuo2024 clipped TS,2,40,200000,failed,148458,148458,online reward-lowering modification count clipped at r_l,0.05773,,11546,188454,8.838725769114422e+17,8.838725769115899e+17
+Xu2021 observation-free UCB,2,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,2,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,2,50,200000,ok,64429.0,64429.0,injected samples,1.0,,135321,0,0.0,64429.0
+Our offline TS,2,50,200000,ok,88685.0,88685.0,injected samples,1.0,,111065,0,0.0,88685.0
+Jun2018 clipped UCB,2,50,200000,failed,150323,150323,online reward-lowering modification count clipped at r_l,0.029605,,5921,194079,46514562.09195534,46664885.09195544
+Zuo2024 clipped TS,2,50,200000,failed,147564,147564,online reward-lowering modification count clipped at r_l,0.04683,,9366,190634,7.1986549424218e+17,7.198654942423301e+17
+Xu2021 observation-free UCB,2,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,2,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Our offline UCB,3,5,200000,ok,27864.0,27864.0,injected samples,1.0,,172111,0,0.0,27864.0
+Our offline TS,3,5,200000,ok,41979.0,41979.0,injected samples,1.0,,157996,0,0.0,41979.0
+Jun2018 clipped UCB,3,5,200000,failed,84356,84356,online reward-lowering modification count clipped at r_l,0.48568,,97136,102864,41100224.52147015,41184580.521470115
+Zuo2024 clipped TS,3,5,200000,failed,44901,44901,online reward-lowering modification count clipped at r_l,0.726245,,145249,54751,7.272653452219948e+17,7.272653452220402e+17
+Xu2021 observation-free UCB,3,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,3,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,3,10,200000,ok,36868.0,36868.0,injected samples,1.0,,163082,0,0.0,36868.0
+Our offline TS,3,10,200000,ok,53602.0,53602.0,injected samples,1.0,,146348,0,0.0,53602.0
+Jun2018 clipped UCB,3,10,200000,failed,117612,117612,online reward-lowering modification count clipped at r_l,0.25623,,51246,148754,52406747.46683068,52524359.466830604
+Zuo2024 clipped TS,3,10,200000,failed,85519,85519,online reward-lowering modification count clipped at r_l,0.46152,,92304,107696,1.250631343256843e+18,1.2506313432569267e+18
+Xu2021 observation-free UCB,3,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,3,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,3,15,200000,ok,42773.0,42773.0,injected samples,1.0,,157152,0,0.0,42773.0
+Our offline TS,3,15,200000,ok,61211.0,61211.0,injected samples,1.0,,138714,0,0.0,61211.0
+Jun2018 clipped UCB,3,15,200000,failed,137198,137198,online reward-lowering modification count clipped at r_l,0.14831,,29662,170338,58772076.3875868,58909274.387586944
+Zuo2024 clipped TS,3,15,200000,failed,115253,115253,online reward-lowering modification count clipped at r_l,0.28254,,56508,143492,1.4272718440521492e+18,1.4272718440522675e+18
+Xu2021 observation-free UCB,3,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,3,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,3,20,200000,ok,47370.0,47370.0,injected samples,1.0,,152530,0,0.0,47370.0
+Our offline TS,3,20,200000,ok,67090.0,67090.0,injected samples,1.0,,132810,0,0.0,67090.0
+Jun2018 clipped UCB,3,20,200000,failed,145894,145894,online reward-lowering modification count clipped at r_l,0.10082,,20164,179836,57336747.63358836,57482641.633588225
+Zuo2024 clipped TS,3,20,200000,failed,130976,130976,online reward-lowering modification count clipped at r_l,0.193095,,38619,161381,1.330269873898543e+18,1.3302698738986757e+18
+Xu2021 observation-free UCB,3,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,3,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,3,30,200000,ok,54444.0,54444.0,injected samples,1.0,,145406,0,0.0,54444.0
+Our offline TS,3,30,200000,ok,76095.0,76095.0,injected samples,1.0,,123755,0,0.0,76095.0
+Jun2018 clipped UCB,3,30,200000,failed,148876,148876,online reward-lowering modification count clipped at r_l,0.06307,,12614,187386,50033077.03030432,50181953.030304365
+Zuo2024 clipped TS,3,30,200000,failed,143769,143769,online reward-lowering modification count clipped at r_l,0.095345,,19069,180931,1.0955383043492175e+18,1.0955383043493638e+18
+Xu2021 observation-free UCB,3,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,3,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,3,40,200000,ok,59908.0,59908.0,injected samples,1.0,,139892,0,0.0,59908.0
+Our offline TS,3,40,200000,ok,83003.0,83003.0,injected samples,1.0,,116797,0,0.0,83003.0
+Jun2018 clipped UCB,3,40,200000,failed,151762,151762,online reward-lowering modification count clipped at r_l,0.03787,,7574,192426,51320288.240170695,51472050.24017073
+Zuo2024 clipped TS,3,40,200000,failed,149276,149276,online reward-lowering modification count clipped at r_l,0.05421,,10842,189158,8.904711108150766e+17,8.904711108152261e+17
+Xu2021 observation-free UCB,3,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,3,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,3,50,200000,ok,64326.0,64326.0,injected samples,1.0,,135424,0,0.0,64326.0
+Our offline TS,3,50,200000,ok,88613.0,88613.0,injected samples,1.0,,111137,0,0.0,88613.0
+Jun2018 clipped UCB,3,50,200000,failed,149908,149908,online reward-lowering modification count clipped at r_l,0.031075,,6215,193785,43615689.745082885,43765597.745082505
+Zuo2024 clipped TS,3,50,200000,failed,148008,148008,online reward-lowering modification count clipped at r_l,0.04346,,8692,191308,7.249871464702624e+17,7.249871464704084e+17
+Xu2021 observation-free UCB,3,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,3,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Our offline UCB,4,5,200000,ok,27847.0,27847.0,injected samples,1.0,,172128,0,0.0,27847.0
+Our offline TS,4,5,200000,ok,41966.0,41966.0,injected samples,1.0,,158009,0,0.0,41966.0
+Jun2018 clipped UCB,4,5,200000,failed,80436,80436,online reward-lowering modification count clipped at r_l,0.50982,,101964,98036,37714506.92746936,37794942.92746928
+Zuo2024 clipped TS,4,5,200000,failed,44754,44754,online reward-lowering modification count clipped at r_l,0.728305,,145661,54339,7.163335020852019e+17,7.163335020852453e+17
+Xu2021 observation-free UCB,4,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,4,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,4,10,200000,ok,36919.0,36919.0,injected samples,1.0,,163031,0,0.0,36919.0
+Our offline TS,4,10,200000,ok,53641.0,53641.0,injected samples,1.0,,146309,0,0.0,53641.0
+Jun2018 clipped UCB,4,10,200000,failed,119999,119999,online reward-lowering modification count clipped at r_l,0.241955,,48391,151609,56376862.681684084,56496861.68168387
+Zuo2024 clipped TS,4,10,200000,failed,85969,85969,online reward-lowering modification count clipped at r_l,0.456895,,91379,108621,1.272169916453508e+18,1.272169916453594e+18
+Xu2021 observation-free UCB,4,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,4,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,4,15,200000,ok,42794.0,42794.0,injected samples,1.0,,157131,0,0.0,42794.0
+Our offline TS,4,15,200000,ok,61227.0,61227.0,injected samples,1.0,,138698,0,0.0,61227.0
+Jun2018 clipped UCB,4,15,200000,failed,138894,138894,online reward-lowering modification count clipped at r_l,0.13683,,27366,172634,61843501.19061498,61982395.19061496
+Zuo2024 clipped TS,4,15,200000,failed,112605,112605,online reward-lowering modification count clipped at r_l,0.2999,,59980,140020,1.3590462663895644e+18,1.3590462663896776e+18
+Xu2021 observation-free UCB,4,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,4,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,4,20,200000,ok,47456.0,47456.0,injected samples,1.0,,152444,0,0.0,47456.0
+Our offline TS,4,20,200000,ok,67152.0,67152.0,injected samples,1.0,,132748,0,0.0,67152.0
+Jun2018 clipped UCB,4,20,200000,failed,145813,145813,online reward-lowering modification count clipped at r_l,0.101135,,20227,179773,56331670.04534647,56477483.04534662
+Zuo2024 clipped TS,4,20,200000,failed,128172,128172,online reward-lowering modification count clipped at r_l,0.21038,,42076,157924,1.2738786009752036e+18,1.273878600975335e+18
+Xu2021 observation-free UCB,4,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,4,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,4,30,200000,ok,54444.0,54444.0,injected samples,1.0,,145406,0,0.0,54444.0
+Our offline TS,4,30,200000,ok,76096.0,76096.0,injected samples,1.0,,123754,0,0.0,76096.0
+Jun2018 clipped UCB,4,30,200000,failed,149670,149670,online reward-lowering modification count clipped at r_l,0.056735,,11347,188653,53776950.555007204,53926620.55500708
+Zuo2024 clipped TS,4,30,200000,failed,143461,143461,online reward-lowering modification count clipped at r_l,0.09804,,19608,180392,1.0890381425426679e+18,1.0890381425428115e+18
+Xu2021 observation-free UCB,4,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,4,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,4,40,200000,ok,59901.0,59901.0,injected samples,1.0,,139899,0,0.0,59901.0
+Our offline TS,4,40,200000,ok,82998.0,82998.0,injected samples,1.0,,116802,0,0.0,82998.0
+Jun2018 clipped UCB,4,40,200000,failed,151229,151229,online reward-lowering modification count clipped at r_l,0.043545,,8709,191291,45461337.747550376,45612566.74755029
+Zuo2024 clipped TS,4,40,200000,failed,149862,149862,online reward-lowering modification count clipped at r_l,0.052065,,10413,189587,8.944918902186682e+17,8.944918902188187e+17
+Xu2021 observation-free UCB,4,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,4,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,4,50,200000,ok,64487.0,64487.0,injected samples,1.0,,135263,0,0.0,64487.0
+Our offline TS,4,50,200000,ok,88724.0,88724.0,injected samples,1.0,,111026,0,0.0,88724.0
+Jun2018 clipped UCB,4,50,200000,failed,149751,149751,online reward-lowering modification count clipped at r_l,0.031745,,6349,193651,42785743.52430397,42935494.52430407
+Zuo2024 clipped TS,4,50,200000,failed,149015,149015,online reward-lowering modification count clipped at r_l,0.03915,,7830,192170,7.315293992718642e+17,7.31529399272013e+17
+Xu2021 observation-free UCB,4,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,4,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Our offline UCB,5,5,200000,ok,27812.0,27812.0,injected samples,1.0,,172163,0,0.0,27812.0
+Our offline TS,5,5,200000,ok,41940.0,41940.0,injected samples,1.0,,158035,0,0.0,41940.0
+Jun2018 clipped UCB,5,5,200000,failed,79952,79952,online reward-lowering modification count clipped at r_l,0.51237,,102474,97526,36869913.34540924,36949865.3454092
+Zuo2024 clipped TS,5,5,200000,failed,46465,46465,online reward-lowering modification count clipped at r_l,0.716515,,143303,56697,7.79885174817482e+17,7.798851748175287e+17
+Xu2021 observation-free UCB,5,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,5,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,5,10,200000,ok,36918.0,36918.0,injected samples,1.0,,163032,0,0.0,36918.0
+Our offline TS,5,10,200000,ok,53640.0,53640.0,injected samples,1.0,,146310,0,0.0,53640.0
+Jun2018 clipped UCB,5,10,200000,failed,120443,120443,online reward-lowering modification count clipped at r_l,0.239375,,47875,152125,60611155.87173109,60731598.87173121
+Zuo2024 clipped TS,5,10,200000,failed,81848,81848,online reward-lowering modification count clipped at r_l,0.48421,,96842,103158,1.1474386192981268e+18,1.1474386192982102e+18
+Xu2021 observation-free UCB,5,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,5,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,5,15,200000,ok,42837.0,42837.0,injected samples,1.0,,157088,0,0.0,42837.0
+Our offline TS,5,15,200000,ok,61258.0,61258.0,injected samples,1.0,,138667,0,0.0,61258.0
+Jun2018 clipped UCB,5,15,200000,failed,136721,136721,online reward-lowering modification count clipped at r_l,0.14973,,29946,170054,55093729.74115194,55230450.74115192
+Zuo2024 clipped TS,5,15,200000,failed,113101,113101,online reward-lowering modification count clipped at r_l,0.296355,,59271,140729,1.3728475705712197e+18,1.3728475705713334e+18
+Xu2021 observation-free UCB,5,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,5,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,5,20,200000,ok,47426.0,47426.0,injected samples,1.0,,152474,0,0.0,47426.0
+Our offline TS,5,20,200000,ok,67131.0,67131.0,injected samples,1.0,,132769,0,0.0,67131.0
+Jun2018 clipped UCB,5,20,200000,failed,146988,146988,online reward-lowering modification count clipped at r_l,0.0947,,18940,181060,59271014.688339405,59418002.68833958
+Zuo2024 clipped TS,5,20,200000,failed,130627,130627,online reward-lowering modification count clipped at r_l,0.195435,,39087,160913,1.3225649945099968e+18,1.3225649945101276e+18
+Xu2021 observation-free UCB,5,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,5,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,5,30,200000,ok,54411.0,54411.0,injected samples,1.0,,145439,0,0.0,54411.0
+Our offline TS,5,30,200000,ok,76073.0,76073.0,injected samples,1.0,,123777,0,0.0,76073.0
+Jun2018 clipped UCB,5,30,200000,failed,149029,149029,online reward-lowering modification count clipped at r_l,0.061645,,12329,187671,50948092.000545986,51097121.00054634
+Zuo2024 clipped TS,5,30,200000,failed,145585,145585,online reward-lowering modification count clipped at r_l,0.085215,,17043,182957,1.1202174314446235e+18,1.1202174314447697e+18
+Xu2021 observation-free UCB,5,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,5,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,5,40,200000,ok,59958.0,59958.0,injected samples,1.0,,139842,0,0.0,59958.0
+Our offline TS,5,40,200000,ok,83038.0,83038.0,injected samples,1.0,,116762,0,0.0,83038.0
+Jun2018 clipped UCB,5,40,200000,failed,151429,151429,online reward-lowering modification count clipped at r_l,0.039985,,7997,192003,50843968.51539563,50995397.515395544
+Zuo2024 clipped TS,5,40,200000,failed,147077,147077,online reward-lowering modification count clipped at r_l,0.06733,,13466,186534,8.659530896101148e+17,8.659530896102597e+17
+Xu2021 observation-free UCB,5,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,5,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,5,50,200000,ok,64398.0,64398.0,injected samples,1.0,,135352,0,0.0,64398.0
+Our offline TS,5,50,200000,ok,88663.0,88663.0,injected samples,1.0,,111087,0,0.0,88663.0
+Jun2018 clipped UCB,5,50,200000,failed,150371,150371,online reward-lowering modification count clipped at r_l,0.029635,,5927,194073,46978651.58605155,47129022.586051375
+Zuo2024 clipped TS,5,50,200000,failed,147717,147717,online reward-lowering modification count clipped at r_l,0.04711,,9422,190578,7.1946968870842e+17,7.194696887085684e+17
+Xu2021 observation-free UCB,5,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,5,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Our offline UCB,6,5,200000,ok,27881.0,27881.0,injected samples,1.0,,172094,0,0.0,27881.0
+Our offline TS,6,5,200000,ok,41992.0,41992.0,injected samples,1.0,,157983,0,0.0,41992.0
+Jun2018 clipped UCB,6,5,200000,failed,79906,79906,online reward-lowering modification count clipped at r_l,0.51312,,102624,97376,34789981.48416083,34869887.48416079
+Zuo2024 clipped TS,6,5,200000,failed,43950,43950,online reward-lowering modification count clipped at r_l,0.732585,,146517,53483,6.939606601683272e+17,6.93960660168372e+17
+Xu2021 observation-free UCB,6,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,6,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,6,10,200000,ok,36842.0,36842.0,injected samples,1.0,,163108,0,0.0,36842.0
+Our offline TS,6,10,200000,ok,53584.0,53584.0,injected samples,1.0,,146366,0,0.0,53584.0
+Jun2018 clipped UCB,6,10,200000,failed,119324,119324,online reward-lowering modification count clipped at r_l,0.245795,,49159,150841,55809936.46508151,55929260.465081446
+Zuo2024 clipped TS,6,10,200000,failed,88907,88907,online reward-lowering modification count clipped at r_l,0.439845,,87969,112031,1.353319846668857e+18,1.3533198466689467e+18
+Xu2021 observation-free UCB,6,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,6,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,6,15,200000,ok,42760.0,42760.0,injected samples,1.0,,157165,0,0.0,42760.0
+Our offline TS,6,15,200000,ok,61203.0,61203.0,injected samples,1.0,,138722,0,0.0,61203.0
+Jun2018 clipped UCB,6,15,200000,failed,137180,137180,online reward-lowering modification count clipped at r_l,0.14667,,29334,170666,57428884.2218154,57566064.221815415
+Zuo2024 clipped TS,6,15,200000,failed,110218,110218,online reward-lowering modification count clipped at r_l,0.314145,,62829,137171,1.3042896605699835e+18,1.304289660570089e+18
+Xu2021 observation-free UCB,6,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,6,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,6,20,200000,ok,47417.0,47417.0,injected samples,1.0,,152483,0,0.0,47417.0
+Our offline TS,6,20,200000,ok,67124.0,67124.0,injected samples,1.0,,132776,0,0.0,67124.0
+Jun2018 clipped UCB,6,20,200000,failed,146744,146744,online reward-lowering modification count clipped at r_l,0.09519,,19038,180962,59854125.94807465,60000869.948074885
+Zuo2024 clipped TS,6,20,200000,failed,129735,129735,online reward-lowering modification count clipped at r_l,0.20064,,40128,159872,1.3055320573445627e+18,1.3055320573446904e+18
+Xu2021 observation-free UCB,6,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,6,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,6,30,200000,ok,54435.0,54435.0,injected samples,1.0,,145415,0,0.0,54435.0
+Our offline TS,6,30,200000,ok,76091.0,76091.0,injected samples,1.0,,123759,0,0.0,76091.0
+Jun2018 clipped UCB,6,30,200000,failed,150143,150143,online reward-lowering modification count clipped at r_l,0.055635,,11127,188873,55636034.370403446,55786177.37040377
+Zuo2024 clipped TS,6,30,200000,failed,145724,145724,online reward-lowering modification count clipped at r_l,0.082735,,16547,183453,1.1262789961518011e+18,1.1262789961519476e+18
+Xu2021 observation-free UCB,6,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,6,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,6,40,200000,ok,59908.0,59908.0,injected samples,1.0,,139892,0,0.0,59908.0
+Our offline TS,6,40,200000,ok,83003.0,83003.0,injected samples,1.0,,116797,0,0.0,83003.0
+Jun2018 clipped UCB,6,40,200000,failed,150944,150944,online reward-lowering modification count clipped at r_l,0.042745,,8549,191451,45926616.264473125,46077560.26447306
+Zuo2024 clipped TS,6,40,200000,failed,148034,148034,online reward-lowering modification count clipped at r_l,0.06244,,12488,187512,8.750372858954323e+17,8.750372858955795e+17
+Xu2021 observation-free UCB,6,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,6,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,6,50,200000,ok,64451.0,64451.0,injected samples,1.0,,135299,0,0.0,64451.0
+Our offline TS,6,50,200000,ok,88698.0,88698.0,injected samples,1.0,,111052,0,0.0,88698.0
+Jun2018 clipped UCB,6,50,200000,failed,149472,149472,online reward-lowering modification count clipped at r_l,0.03327,,6654,193346,42342278.2638542,42491750.263854064
+Zuo2024 clipped TS,6,50,200000,failed,148339,148339,online reward-lowering modification count clipped at r_l,0.040715,,8143,191857,7.291477951205624e+17,7.291477951207049e+17
+Xu2021 observation-free UCB,6,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,6,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Our offline UCB,7,5,200000,ok,27864.0,27864.0,injected samples,1.0,,172111,0,0.0,27864.0
+Our offline TS,7,5,200000,ok,41979.0,41979.0,injected samples,1.0,,157996,0,0.0,41979.0
+Jun2018 clipped UCB,7,5,200000,failed,81735,81735,online reward-lowering modification count clipped at r_l,0.50333,,100666,99334,37202691.84144941,37284426.8414495
+Zuo2024 clipped TS,7,5,200000,failed,43291,43291,online reward-lowering modification count clipped at r_l,0.736805,,147361,52639,6.722276638160564e+17,6.722276638160998e+17
+Xu2021 observation-free UCB,7,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,7,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,7,10,200000,ok,36855.0,36855.0,injected samples,1.0,,163095,0,0.0,36855.0
+Our offline TS,7,10,200000,ok,53593.0,53593.0,injected samples,1.0,,146357,0,0.0,53593.0
+Jun2018 clipped UCB,7,10,200000,failed,119067,119067,online reward-lowering modification count clipped at r_l,0.249345,,49869,150131,56680446.541579045,56799513.54157906
+Zuo2024 clipped TS,7,10,200000,failed,86444,86444,online reward-lowering modification count clipped at r_l,0.454995,,90999,109001,1.2811700336032765e+18,1.2811700336033615e+18
+Xu2021 observation-free UCB,7,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,7,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,7,15,200000,ok,42837.0,42837.0,injected samples,1.0,,157088,0,0.0,42837.0
+Our offline TS,7,15,200000,ok,61258.0,61258.0,injected samples,1.0,,138667,0,0.0,61258.0
+Jun2018 clipped UCB,7,15,200000,failed,136754,136754,online reward-lowering modification count clipped at r_l,0.149005,,29801,170199,56001763.97172068,56138517.97172039
+Zuo2024 clipped TS,7,15,200000,failed,111976,111976,online reward-lowering modification count clipped at r_l,0.30319,,60638,139362,1.3462768872331167e+18,1.3462768872332275e+18
+Xu2021 observation-free UCB,7,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,7,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,7,20,200000,ok,47360.0,47360.0,injected samples,1.0,,152540,0,0.0,47360.0
+Our offline TS,7,20,200000,ok,67083.0,67083.0,injected samples,1.0,,132817,0,0.0,67083.0
+Jun2018 clipped UCB,7,20,200000,failed,147261,147261,online reward-lowering modification count clipped at r_l,0.0932,,18640,181360,62493887.42397093,62641148.42397114
+Zuo2024 clipped TS,7,20,200000,failed,133611,133611,online reward-lowering modification count clipped at r_l,0.176155,,35231,164769,1.3867122153128338e+18,1.3867122153129664e+18
+Xu2021 observation-free UCB,7,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,7,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,7,30,200000,ok,54476.0,54476.0,injected samples,1.0,,145374,0,0.0,54476.0
+Our offline TS,7,30,200000,ok,76119.0,76119.0,injected samples,1.0,,123731,0,0.0,76119.0
+Jun2018 clipped UCB,7,30,200000,failed,149416,149416,online reward-lowering modification count clipped at r_l,0.060415,,12083,187917,50000697.77846752,50150113.77846749
+Zuo2024 clipped TS,7,30,200000,failed,144134,144134,online reward-lowering modification count clipped at r_l,0.094625,,18925,181075,1.097297724888809e+18,1.0972977248889528e+18
+Xu2021 observation-free UCB,7,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,7,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,7,40,200000,ok,59972.0,59972.0,injected samples,1.0,,139828,0,0.0,59972.0
+Our offline TS,7,40,200000,ok,83048.0,83048.0,injected samples,1.0,,116752,0,0.0,83048.0
+Jun2018 clipped UCB,7,40,200000,failed,151742,151742,online reward-lowering modification count clipped at r_l,0.03881,,7762,192238,52680133.01036426,52831875.01036465
+Zuo2024 clipped TS,7,40,200000,failed,148435,148435,online reward-lowering modification count clipped at r_l,0.05895,,11790,188210,8.815436791692667e+17,8.81543679169412e+17
+Xu2021 observation-free UCB,7,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,7,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,7,50,200000,ok,64379.0,64379.0,injected samples,1.0,,135371,0,0.0,64379.0
+Our offline TS,7,50,200000,ok,88650.0,88650.0,injected samples,1.0,,111100,0,0.0,88650.0
+Jun2018 clipped UCB,7,50,200000,failed,149639,149639,online reward-lowering modification count clipped at r_l,0.033645,,6729,193271,43242441.76578211,43392080.76578227
+Zuo2024 clipped TS,7,50,200000,failed,147996,147996,online reward-lowering modification count clipped at r_l,0.04392,,8784,191216,7.24281136014673e+17,7.242811360148177e+17
+Xu2021 observation-free UCB,7,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,7,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Our offline UCB,8,5,200000,ok,27881.0,27881.0,injected samples,1.0,,172094,0,0.0,27881.0
+Our offline TS,8,5,200000,ok,41992.0,41992.0,injected samples,1.0,,157983,0,0.0,41992.0
+Jun2018 clipped UCB,8,5,200000,failed,83809,83809,online reward-lowering modification count clipped at r_l,0.488945,,97789,102211,42831070.55160002,42914879.551600054
+Zuo2024 clipped TS,8,5,200000,failed,43232,43232,online reward-lowering modification count clipped at r_l,0.73591,,147182,52818,6.768117801727866e+17,6.768117801728296e+17
+Xu2021 observation-free UCB,8,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,8,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,8,10,200000,ok,36932.0,36932.0,injected samples,1.0,,163018,0,0.0,36932.0
+Our offline TS,8,10,200000,ok,53650.0,53650.0,injected samples,1.0,,146300,0,0.0,53650.0
+Jun2018 clipped UCB,8,10,200000,failed,119411,119411,online reward-lowering modification count clipped at r_l,0.248245,,49649,150351,54703631.66341852,54823042.66341822
+Zuo2024 clipped TS,8,10,200000,failed,80489,80489,online reward-lowering modification count clipped at r_l,0.49108,,98216,101784,1.1171065608076982e+18,1.1171065608077788e+18
+Xu2021 observation-free UCB,8,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,8,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,8,15,200000,ok,42815.0,42815.0,injected samples,1.0,,157110,0,0.0,42815.0
+Our offline TS,8,15,200000,ok,61242.0,61242.0,injected samples,1.0,,138683,0,0.0,61242.0
+Jun2018 clipped UCB,8,15,200000,failed,137615,137615,online reward-lowering modification count clipped at r_l,0.144205,,28841,171159,59213368.850004576,59350983.85000462
+Zuo2024 clipped TS,8,15,200000,failed,117241,117241,online reward-lowering modification count clipped at r_l,0.270535,,54107,145893,1.4754044583814147e+18,1.4754044583815342e+18
+Xu2021 observation-free UCB,8,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,8,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,8,20,200000,ok,47370.0,47370.0,injected samples,1.0,,152530,0,0.0,47370.0
+Our offline TS,8,20,200000,ok,67090.0,67090.0,injected samples,1.0,,132810,0,0.0,67090.0
+Jun2018 clipped UCB,8,20,200000,failed,145254,145254,online reward-lowering modification count clipped at r_l,0.10422,,20844,179156,54865711.67457105,55010965.674571045
+Zuo2024 clipped TS,8,20,200000,failed,131215,131215,online reward-lowering modification count clipped at r_l,0.190645,,38129,161871,1.3383744382001257e+18,1.338374438200254e+18
+Xu2021 observation-free UCB,8,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,8,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,8,30,200000,ok,54346.0,54346.0,injected samples,1.0,,145504,0,0.0,54346.0
+Our offline TS,8,30,200000,ok,76026.0,76026.0,injected samples,1.0,,123824,0,0.0,76026.0
+Jun2018 clipped UCB,8,30,200000,failed,149867,149867,online reward-lowering modification count clipped at r_l,0.059115,,11823,188177,52930193.75847161,53080060.75847168
+Zuo2024 clipped TS,8,30,200000,failed,144012,144012,online reward-lowering modification count clipped at r_l,0.093995,,18799,181201,1.0988505640226783e+18,1.0988505640228244e+18
+Xu2021 observation-free UCB,8,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,8,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,8,40,200000,ok,59901.0,59901.0,injected samples,1.0,,139899,0,0.0,59901.0
+Our offline TS,8,40,200000,ok,82998.0,82998.0,injected samples,1.0,,116802,0,0.0,82998.0
+Jun2018 clipped UCB,8,40,200000,failed,150959,150959,online reward-lowering modification count clipped at r_l,0.04179,,8358,191642,48500853.44599841,48651812.44599883
+Zuo2024 clipped TS,8,40,200000,failed,148859,148859,online reward-lowering modification count clipped at r_l,0.056835,,11367,188633,8.854964597573129e+17,8.854964597574619e+17
+Xu2021 observation-free UCB,8,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,8,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,8,50,200000,ok,64430.0,64430.0,injected samples,1.0,,135320,0,0.0,64430.0
+Our offline TS,8,50,200000,ok,88684.0,88684.0,injected samples,1.0,,111066,0,0.0,88684.0
+Jun2018 clipped UCB,8,50,200000,failed,149663,149663,online reward-lowering modification count clipped at r_l,0.03214,,6428,193572,44475300.30970586,44624963.30970558
+Zuo2024 clipped TS,8,50,200000,failed,146924,146924,online reward-lowering modification count clipped at r_l,0.04989,,9978,190022,7.152771744089519e+17,7.152771744091041e+17
+Xu2021 observation-free UCB,8,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,8,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Our offline UCB,9,5,200000,ok,27881.0,27881.0,injected samples,1.0,,172094,0,0.0,27881.0
+Our offline TS,9,5,200000,ok,41992.0,41992.0,injected samples,1.0,,157983,0,0.0,41992.0
+Jun2018 clipped UCB,9,5,200000,failed,80270,80270,online reward-lowering modification count clipped at r_l,0.51064,,102128,97872,35418906.64066995,35499176.640670024
+Zuo2024 clipped TS,9,5,200000,failed,46865,46865,online reward-lowering modification count clipped at r_l,0.715675,,143135,56865,7.844926974833855e+17,7.844926974834323e+17
+Xu2021 observation-free UCB,9,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Xu2021 observation-free TS,9,5,200000,infeasible,,439420.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,439420.0
+Our offline UCB,9,10,200000,ok,36842.0,36842.0,injected samples,1.0,,163108,0,0.0,36842.0
+Our offline TS,9,10,200000,ok,53584.0,53584.0,injected samples,1.0,,146366,0,0.0,53584.0
+Jun2018 clipped UCB,9,10,200000,failed,118609,118609,online reward-lowering modification count clipped at r_l,0.253415,,50683,149317,53301232.95779487,53419841.957794935
+Zuo2024 clipped TS,9,10,200000,failed,86084,86084,online reward-lowering modification count clipped at r_l,0.45704,,91408,108592,1.2714847603400177e+18,1.271484760340102e+18
+Xu2021 observation-free UCB,9,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Xu2021 observation-free TS,9,10,200000,infeasible,,878838.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,878838.0
+Our offline UCB,9,15,200000,ok,42816.0,42816.0,injected samples,1.0,,157109,0,0.0,42816.0
+Our offline TS,9,15,200000,ok,61242.0,61242.0,injected samples,1.0,,138683,0,0.0,61242.0
+Jun2018 clipped UCB,9,15,200000,failed,136431,136431,online reward-lowering modification count clipped at r_l,0.15041,,30082,169918,55857115.92623705,55993546.92623698
+Zuo2024 clipped TS,9,15,200000,failed,108197,108197,online reward-lowering modification count clipped at r_l,0.32867,,65734,134266,1.2496242677490204e+18,1.249624267749129e+18
+Xu2021 observation-free UCB,9,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Xu2021 observation-free TS,9,15,200000,infeasible,,1318256.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1318256.0
+Our offline UCB,9,20,200000,ok,47427.0,47427.0,injected samples,1.0,,152473,0,0.0,47427.0
+Our offline TS,9,20,200000,ok,67131.0,67131.0,injected samples,1.0,,132769,0,0.0,67131.0
+Jun2018 clipped UCB,9,20,200000,failed,146582,146582,online reward-lowering modification count clipped at r_l,0.09633,,19266,180734,58184586.43499862,58331168.43499863
+Zuo2024 clipped TS,9,20,200000,failed,129857,129857,online reward-lowering modification count clipped at r_l,0.19999,,39998,160002,1.3076250677693745e+18,1.3076250677695045e+18
+Xu2021 observation-free UCB,9,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Xu2021 observation-free TS,9,20,200000,infeasible,,1757676.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,1757676.0
+Our offline UCB,9,30,200000,ok,54452.0,54452.0,injected samples,1.0,,145398,0,0.0,54452.0
+Our offline TS,9,30,200000,ok,76102.0,76102.0,injected samples,1.0,,123748,0,0.0,76102.0
+Jun2018 clipped UCB,9,30,200000,failed,150216,150216,online reward-lowering modification count clipped at r_l,0.05572,,11144,188856,55516400.48331046,55666616.483310506
+Zuo2024 clipped TS,9,30,200000,failed,145426,145426,online reward-lowering modification count clipped at r_l,0.08709,,17418,182582,1.1156453433003731e+18,1.115645343300516e+18
+Xu2021 observation-free UCB,9,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Xu2021 observation-free TS,9,30,200000,infeasible,,2636512.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,2636512.0
+Our offline UCB,9,40,200000,ok,59901.0,59901.0,injected samples,1.0,,139899,0,0.0,59901.0
+Our offline TS,9,40,200000,ok,82998.0,82998.0,injected samples,1.0,,116802,0,0.0,82998.0
+Jun2018 clipped UCB,9,40,200000,failed,151434,151434,online reward-lowering modification count clipped at r_l,0.04021,,8042,191958,49206935.46203938,49358369.46203911
+Zuo2024 clipped TS,9,40,200000,failed,147200,147200,online reward-lowering modification count clipped at r_l,0.0672,,13440,186560,8.662128664650423e+17,8.6621286646519e+17
+Xu2021 observation-free UCB,9,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Xu2021 observation-free TS,9,40,200000,infeasible,,3515350.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,3515350.0
+Our offline UCB,9,50,200000,ok,64417.0,64417.0,injected samples,1.0,,135333,0,0.0,64417.0
+Our offline TS,9,50,200000,ok,88677.0,88677.0,injected samples,1.0,,111073,0,0.0,88677.0
+Jun2018 clipped UCB,9,50,200000,failed,150140,150140,online reward-lowering modification count clipped at r_l,0.03088,,6176,193824,45916752.115756854,46066892.11575644
+Zuo2024 clipped TS,9,50,200000,failed,148150,148150,online reward-lowering modification count clipped at r_l,0.041705,,8341,191659,7.276345027694369e+17,7.276345027695864e+17
+Xu2021 observation-free UCB,9,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
+Xu2021 observation-free TS,9,50,200000,infeasible,,4394188.0,corrupted rounds; not simulated because native cost exceeds horizon,,,,,0.0,4394188.0
