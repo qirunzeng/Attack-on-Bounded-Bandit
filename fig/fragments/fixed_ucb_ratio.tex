@@ -1,0 +1,127 @@
+\subfloat[UCB target-arm ratio versus $T$]{%
+\begin{minipage}[t]{0.49\linewidth}
+\vspace{0pt}
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\linewidth,
+    height=3.8cm,
+    xmode=log,
+    log basis x=10,
+    xlabel={},
+    scaled x ticks=false,
+    ylabel={{\small Target-arm ratio}},
+    ymin=0,
+    ymax=1.05,
+    tick align=outside,
+    tick pos=left,
+    xtick={100000,250000,500000,1000000,2500000,5000000,10000000,15000000,20000000,25000000},
+    xticklabels={100k,250k,500k,1M,2.5M,5M,10M,15M,20M,25M},
+    xticklabel style={font=\scriptsize, rotate=30, anchor=east},
+    yticklabel style={font=\scriptsize},
+    axis line style={black},
+        legend pos=north west,
+        reverse legend,
+    legend style={
+        fill opacity=0.5,
+        draw opacity=1,
+        text opacity=1,
+        font=\fontsize{5}{6}\selectfont,
+        row sep=0pt,
+        inner xsep=2pt,
+        inner ysep=1pt
+    },
+]
+
+\addplot[name path=ucbsharecleanupper, draw=none, forget plot] coordinates {(100000,0.00030588811) (250000,0.00013647575) (500000,7.2598412e-05) (1000000,3.9118937e-05) (2500000,1.6635524e-05) (5000000,8.8497367e-06) (10000000,4.6248683e-06) (15000000,3.1710728e-06) (20000000,2.4283046e-06) (25000000,1.9829515e-06)};
+\addplot[name path=ucbsharecleanlower, draw=none, forget plot] coordinates {(100000,0.00029011189) (250000,0.00012912425) (500000,6.9801588e-05) (1000000,3.7281063e-05) (2500000,1.6004476e-05) (5000000,8.4702633e-06) (10000000,4.4351317e-06) (15000000,3.0422605e-06) (20000000,2.3316954e-06) (25000000,1.8890485e-06)};
+\addplot[black!45, fill opacity=0.10, draw=none, forget plot]
+    fill between[of=ucbsharecleanupper and ucbsharecleanlower];
+\addplot[
+    color=black!45,
+    opacity=0.78,
+    thick,
+    solid,
+    mark=x,
+    mark options={fill=white, draw=black!45, fill opacity=0.55, draw opacity=0.78}
+] coordinates {(100000,0.000298) (250000,0.0001328) (500000,7.12e-05) (1000000,3.82e-05) (2500000,1.632e-05) (5000000,8.66e-06) (10000000,4.53e-06) (15000000,3.1066667e-06) (20000000,2.38e-06) (25000000,1.936e-06)};
+
+
+
+\addplot[name path=ucbrjunupper, draw=none, forget plot] coordinates {(100000,0.20579487) (250000,0.29858798) (500000,0.42455195) (1000000,0.58133997) (2500000,0.71796217) (5000000,0.79082202) (10000000,0.85598665) (15000000,0.88780654) (20000000,0.90717906) (25000000,0.920386)};
+\addplot[name path=ucbrjunlower, draw=none, forget plot] coordinates {(100000,0.20044513) (250000,0.29489682) (500000,0.41952685) (1000000,0.57856783) (2500000,0.71793063) (5000000,0.79080942) (10000000,0.85598023) (15000000,0.88780092) (20000000,0.90717606) (25000000,0.92038102)};
+\addplot[black!65, fill opacity=0.10, draw=none, forget plot]
+    fill between[of=ucbrjunupper and ucbrjunlower];
+\addplot[
+    color=black!65,
+    opacity=0.78,
+    thick,
+    solid,
+    mark=square*,
+    mark options={fill=white, draw=black!65, fill opacity=0.55, draw opacity=0.78}
+] coordinates {(100000,0.20312) (250000,0.2967424) (500000,0.4220394) (1000000,0.5799539) (2500000,0.7179464) (5000000,0.79081572) (10000000,0.85598344) (15000000,0.88780373) (20000000,0.90717756) (25000000,0.92038351)};
+
+
+
+\addplot[name path=ucbshareappupper, draw=none, forget plot] coordinates {(100000,0.89532957) (250000,0.92498069) (500000,0.94128783) (1000000,0.95382945) (2500000,0.96619383) (5000000,0.97319949) (10000000,0.97870201) (15000000,0.98136405) (20000000,0.98304254) (25000000,0.98423679)};
+\addplot[name path=ucbshareapplower, draw=none, forget plot] coordinates {(100000,0.89502243) (250000,0.92482651) (500000,0.94119417) (1000000,0.95377135) (2500000,0.96616345) (5000000,0.97318095) (10000000,0.97869065) (15000000,0.98135543) (20000000,0.98303546) (25000000,0.98423073)};
+\addplot[myorange, fill opacity=0.10, draw=none, forget plot]
+    fill between[of=ucbshareappupper and ucbshareapplower];
+\addplot[
+    color=myorange,
+    opacity=0.78,
+    thick,
+    solid,
+    mark=square*,
+    mark options={fill=white, draw=myorange, fill opacity=0.55, draw opacity=0.78}
+] coordinates {(100000,0.895176) (250000,0.9249036) (500000,0.941241) (1000000,0.9538004) (2500000,0.96617864) (5000000,0.97319022) (10000000,0.97869633) (15000000,0.98135974) (20000000,0.983039) (25000000,0.98423376)};
+
+
+
+\addplot[name path=ucbsharedirupper, draw=none, forget plot] coordinates {(100000,0.90957425) (250000,0.93291727) (500000,0.94642198) (1000000,0.95731964) (2500000,0.96814473) (5000000,0.97442293) (10000000,0.97952148) (15000000,0.98196112) (20000000,0.98353301) (25000000,0.98468305)};
+\addplot[name path=ucbsharedirlower, draw=none, forget plot] coordinates {(100000,0.90801175) (250000,0.93245793) (500000,0.94609002) (1000000,0.95705316) (2500000,0.96794679) (5000000,0.97434071) (10000000,0.97950482) (15000000,0.98194862) (20000000,0.98352276) (25000000,0.98467427)};
+\addplot[myblue, fill opacity=0.10, draw=none, forget plot]
+    fill between[of=ucbsharedirupper and ucbsharedirlower];
+\addplot[
+    color=myblue,
+    opacity=0.78,
+    thick,
+    solid,
+    mark=x,
+    mark options={fill=white, draw=myblue, fill opacity=0.55, draw opacity=0.78}
+] coordinates {(100000,0.908793) (250000,0.9326876) (500000,0.946256) (1000000,0.9571864) (2500000,0.96804576) (5000000,0.97438182) (10000000,0.97951315) (15000000,0.98195487) (20000000,0.98352788) (25000000,0.98467866)};
+
+
+
+\addplot[name path=ucbtappupper, draw=none, forget plot] coordinates {(100000,1) (250000,1) (500000,1) (1000000,1) (2500000,1) (5000000,1) (10000000,1) (15000000,1) (20000000,1) (25000000,1)};
+\addplot[name path=ucbtapplower, draw=none, forget plot] coordinates {(100000,1) (250000,1) (500000,1) (1000000,1) (2500000,1) (5000000,1) (10000000,1) (15000000,1) (20000000,1) (25000000,1)};
+\addplot[myorange, fill opacity=0.10, draw=none, forget plot]
+    fill between[of=ucbtappupper and ucbtapplower];
+\addplot[
+    color=myorange,
+    opacity=0.78,
+    thick,
+    solid,
+    mark=o,
+    mark options={fill=white, draw=myorange, fill opacity=0.55, draw opacity=0.78}
+] coordinates {(100000,1) (250000,1) (500000,1) (1000000,1) (2500000,1) (5000000,1) (10000000,1) (15000000,1) (20000000,1) (25000000,1)};
+
+
+
+\addplot[name path=ucbtdirupper, draw=none, forget plot] coordinates {(100000,1) (250000,1) (500000,1) (1000000,1) (2500000,1) (5000000,1) (10000000,1) (15000000,1) (20000000,1) (25000000,1)};
+\addplot[name path=ucbtdirlower, draw=none, forget plot] coordinates {(100000,1) (250000,1) (500000,1) (1000000,1) (2500000,1) (5000000,1) (10000000,1) (15000000,1) (20000000,1) (25000000,1)};
+\addplot[myblue, fill opacity=0.10, draw=none, forget plot]
+    fill between[of=ucbtdirupper and ucbtdirlower];
+\addplot[
+    color=myblue,
+    opacity=0.78,
+    thick,
+    solid,
+    mark=triangle*,
+    mark options={fill=white, draw=myblue, fill opacity=0.55, draw opacity=0.78}
+] coordinates {(100000,1) (250000,1) (500000,1) (1000000,1) (2500000,1) (5000000,1) (10000000,1) (15000000,1) (20000000,1) (25000000,1)};
+
+
+\end{axis}
+\end{tikzpicture}
+\end{minipage}}

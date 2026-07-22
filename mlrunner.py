@@ -33,7 +33,21 @@ fake_reward_target = r_u
 fake_reward_non_target = r_l
 max_fixed_point_iters = 100
 LEGality_tol = 1e-9
-T_GRID = [100_000, 250_000, 400_000, 550_000, 700_000, 850_000, 1_000_000]
+# Previous 1M-horizon grid:
+# T_GRID = [100_000, 250_000, 400_000, 550_000, 700_000, 850_000, 1_000_000]
+# The MovieLens-25M experiments now extend the learner horizon to 25M.
+T_GRID = [
+    100_000,
+    250_000,
+    500_000,
+    1_000_000,
+    2_500_000,
+    5_000_000,
+    10_000_000,
+    15_000_000,
+    20_000_000,
+    25_000_000,
+]
 NUM_REPEATS = 10
 TARGET_MIN_COUNT = 1
 

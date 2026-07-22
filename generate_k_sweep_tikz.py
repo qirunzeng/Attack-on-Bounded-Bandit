@@ -6,7 +6,7 @@ from pathlib import Path
 import mlrunner
 
 PROJECT_DIR = Path(__file__).resolve().parent
-ROOT_DIR = PROJECT_DIR.parent
+ROOT_DIR = PROJECT_DIR
 K_RESULTS_FILE = mlrunner.RESULTS_DIR / "k_sweep_results.csv"
 BASELINE_RESULTS_FILE = mlrunner.RESULTS_DIR / "baseline_comparison_results.csv"
 FIG_FILE = ROOT_DIR / "fig" / "k_sweep_cost_decomposition.tex"

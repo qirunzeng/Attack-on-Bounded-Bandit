@@ -6,7 +6,7 @@ from pathlib import Path
 import mlrunner
 
 PROJECT_DIR = Path(__file__).resolve().parent
-ROOT_DIR = PROJECT_DIR.parent
+ROOT_DIR = PROJECT_DIR
 RESULTS_FILE = mlrunner.RESULTS_DIR / "delta_sweep_results.csv"
 UCB_FIG_FILE = ROOT_DIR / "fig" / "delta_sweep_ucb.tex"
 TS_FIG_FILE = ROOT_DIR / "fig" / "delta_sweep_ts.tex"

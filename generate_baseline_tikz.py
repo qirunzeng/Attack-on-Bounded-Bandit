@@ -6,14 +6,14 @@ from pathlib import Path
 import mlrunner
 
 PROJECT_DIR = Path(__file__).resolve().parent
-ROOT_DIR = PROJECT_DIR.parent
+ROOT_DIR = PROJECT_DIR
 RESULTS_FILE = mlrunner.RESULTS_DIR / "baseline_comparison_results.csv"
 FIG_FILE = ROOT_DIR / "fig" / "online_baseline_comparison.tex"
 
 
 def read_rows():
     if not RESULTS_FILE.exists():
-        raise FileNotFoundError(f"Missing {RESULTS_FILE}. Run exp/baseline_comparison_runner.py first.")
+        raise FileNotFoundError(f"Missing {RESULTS_FILE}. Run baseline_comparison_runner.py first.")
     with RESULTS_FILE.open("r", newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
