@@ -7,6 +7,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
+from tqdm import tqdm
 
 import bandit
 
@@ -18,21 +19,16 @@ r_l = 0.0
 r_u = 1.0
 R = r_u - r_l
 
-# Previous Scheme A (kept for reproducibility/reference):
-# binary_like_threshold = 4
-# reward_distribution = "Bernoulli(mu_i), mu_i = MovieLens positive-rating rate"
-reward_distribution = "empirical MovieLens rating distribution normalized to [0, 1]"
+POSITIVE_RATING_THRESHOLD = 4.0
+reward_distribution = "Bernoulli(mu_i), mu_i = MovieLens positive-rating rate for rating >= 4"
 sigma = 0.5
 N0_i = 5
-# Previous Scheme A:
-# clean_offline_mode = "sample N0_i binary MovieLens ratings with fixed seed"
-clean_offline_mode = "sample N0_i normalized empirical MovieLens ratings with fixed seed"
+clean_offline_mode = "sample N0_i Bernoulli MovieLens rewards with replacement and fixed seed"
 seed = 2026
 
 fake_reward_target = r_u
 fake_reward_non_target = r_l
 max_fixed_point_iters = 100
-LEGality_tol = 1e-9
 # Previous 1M-horizon grid:
 # T_GRID = [100_000, 250_000, 400_000, 550_000, 700_000, 850_000, 1_000_000]
 # The MovieLens-25M experiments now extend the learner horizon to 25M.
@@ -85,7 +81,7 @@ def _rating_bounds(dataset):
 
 @lru_cache(maxsize=None)
 def _load_movielens_base(dataset):
-    """Read a MovieLens release once; compact half-star values into bytearrays."""
+    """Read a MovieLens release once and store rating>=4 indicators as bytes."""
     data_dir, ratings_file, movies_file = _dataset_paths(dataset)
     rating_min, rating_max = _rating_bounds(dataset)
 
@@ -101,19 +97,18 @@ def _load_movielens_base(dataset):
             for row in csv.DictReader(f):
                 movie_titles[int(row["movieId"])] = row["title"]
 
-    # Store rating*2 as one byte.  This keeps all 25M empirical rewards in
-    # roughly 25 MB instead of retaining 25M Python float objects.
-    movie_encoded_rewards = defaultdict(bytearray)
-    movie_count_and_encoded_sum = defaultdict(lambda: [0, 0])
+    movie_binary_rewards = defaultdict(bytearray)
+    movie_count_and_positive_sum = defaultdict(lambda: [0, 0])
 
     def add_rating(movie_id, rating):
         encoded = int(round(2.0 * rating))
         if abs(encoded / 2.0 - rating) > 1e-12 or not (2.0 * rating_min <= encoded <= 2.0 * rating_max):
             raise ValueError(f"Unsupported MovieLens rating {rating!r} for {dataset}.")
-        movie_encoded_rewards[movie_id].append(encoded)
-        stats = movie_count_and_encoded_sum[movie_id]
+        positive = int(rating >= POSITIVE_RATING_THRESHOLD)
+        movie_binary_rewards[movie_id].append(positive)
+        stats = movie_count_and_positive_sum[movie_id]
         stats[0] += 1
-        stats[1] += encoded
+        stats[1] += positive
 
     if dataset == "1m":
         with ratings_file.open("r", encoding="latin-1", errors="replace") as f:
@@ -127,25 +122,26 @@ def _load_movielens_base(dataset):
             header = f.readline().rstrip("\r\n")
             if header != "userId,movieId,rating,timestamp":
                 raise ValueError(f"Unexpected ratings.csv header: {header!r}")
-            # ratings.csv contains four numeric, unquoted columns.  Avoid the
-            # per-row DictReader overhead across 25M rows; movies.csv still
-            # uses the full CSV parser because titles can contain commas.
+            # ratings.csv contains four numeric, unquoted columns. Avoid the
+            # per-row DictReader overhead across 25M rows.
             for line in f:
                 _, movie_id_text, rating_text, _ = line.rstrip("\r\n").split(",")
                 movie_id = int(movie_id_text)
-                encoded = int(round(2.0 * float(rating_text)))
-                if not (2.0 * rating_min <= encoded <= 2.0 * rating_max):
+                rating = float(rating_text)
+                encoded = int(round(2.0 * rating))
+                if abs(encoded / 2.0 - rating) > 1e-12 or not (2.0 * rating_min <= encoded <= 2.0 * rating_max):
                     raise ValueError(f"Unsupported MovieLens rating {rating_text!r} for {dataset}.")
-                movie_encoded_rewards[movie_id].append(encoded)
-                stats = movie_count_and_encoded_sum[movie_id]
+                positive = int(rating >= POSITIVE_RATING_THRESHOLD)
+                movie_binary_rewards[movie_id].append(positive)
+                stats = movie_count_and_positive_sum[movie_id]
                 stats[0] += 1
-                stats[1] += encoded
+                stats[1] += positive
 
     return {
         "data_dir": data_dir,
         "movie_titles": movie_titles,
-        "movie_encoded_rewards": dict(movie_encoded_rewards),
-        "movie_count_and_encoded_sum": dict(movie_count_and_encoded_sum),
+        "movie_binary_rewards": dict(movie_binary_rewards),
+        "movie_count_and_positive_sum": dict(movie_count_and_positive_sum),
         "rating_min": rating_min,
         "rating_max": rating_max,
     }
@@ -156,43 +152,40 @@ def load_movielens(K_value=K, dataset=None):
     if dataset not in {"1m", "25m"}:
         raise ValueError("dataset must be '1m', 'ml-1m', '25m', or 'ml-25m'.")
     base = _load_movielens_base(dataset)
-    rating_min = base["rating_min"]
-    rating_range = base["rating_max"] - rating_min
-
     movie_stats = []
-    for movie_id, (count_i, encoded_sum_i) in base["movie_count_and_encoded_sum"].items():
-        normalized_sum_i = encoded_sum_i / 2.0 - count_i * rating_min
-        normalized_sum_i /= rating_range
-        mu_i = normalized_sum_i / count_i
-        movie_stats.append((movie_id, count_i, normalized_sum_i, mu_i))
+    for movie_id, (count_i, positive_sum_i) in base["movie_count_and_positive_sum"].items():
+        mu_i = positive_sum_i / count_i
+        movie_stats.append((movie_id, count_i, float(positive_sum_i), mu_i))
 
     if len(movie_stats) < K_value:
         raise ValueError(f"MovieLens has {len(movie_stats)} movies, fewer than K={K_value}.")
 
     target_candidates = [row for row in movie_stats if row[1] >= TARGET_MIN_COUNT and row[3] > 0]
     if not target_candidates:
-        raise ValueError("No MovieLens movie has a positive normalized empirical mean.")
+        raise ValueError("No MovieLens movie has a positive empirical mean.")
 
     target_row = min(target_candidates, key=lambda row: (row[3], -row[1], row[0]))
     non_target_candidates = [row for row in movie_stats if row[0] != target_row[0]]
-    selected_by_count = sorted(non_target_candidates, key=lambda row: (-row[1], row[0]))[: K_value - 1]
-    selected_by_count.append(target_row)
-    selected_arms = sorted(selected_by_count, key=lambda row: (-row[3], -row[1], row[0]))
+    selected_non_targets = sorted(non_target_candidates, key=lambda row: (-row[1], row[0]))[: K_value - 1]
+    if any(row[3] < target_row[3] for row in selected_non_targets):
+        raise RuntimeError("A selected non-target arm has mean below the designated target arm.")
+    selected_arms = sorted(selected_non_targets, key=lambda row: (-row[3], -row[1], row[0])) + [target_row]
     selected_movie_ids = [row[0] for row in selected_arms]
     selected_counts = np.array([row[1] for row in selected_arms], dtype=int)
     selected_reward_sums = np.array([row[2] for row in selected_arms], dtype=float)
     mu = np.array([row[3] for row in selected_arms], dtype=float)
 
-    if not np.all(mu[:-1] >= mu[1:] - 1e-15):
+    if not np.all(mu[:-1] >= mu[-1] - 1e-15):
         raise RuntimeError("Selected MovieLens arms are not sorted by descending mu_i.")
+    if selected_movie_ids[-1] != target_row[0]:
+        raise RuntimeError("The designated MovieLens target is not arm K.")
     if K_value == K and target_arm != K:
         raise RuntimeError("This runner uses the paper convention target arm = K.")
 
     selected_reward_arrays = []
     for movie_id in selected_movie_ids:
-        encoded = base["movie_encoded_rewards"][movie_id]
-        ratings_i = np.frombuffer(encoded, dtype=np.uint8).astype(float) / 2.0
-        rewards_i = (ratings_i - rating_min) / rating_range
+        encoded = base["movie_binary_rewards"][movie_id]
+        rewards_i = np.frombuffer(encoded, dtype=np.uint8).astype(float)
         selected_reward_arrays.append(rewards_i)
     metadata = {
         "dataset": dataset,
@@ -206,7 +199,7 @@ def load_movielens(K_value=K, dataset=None):
         "mu": mu,
         "rating_min": base["rating_min"],
         "rating_max": base["rating_max"],
-        "reward_source": "empirical_normalized_rating_with_replacement",
+        "reward_source": "empirical_binary_rating_ge_4_with_replacement",
         "target_min_count": TARGET_MIN_COUNT,
         "target_selection": "smallest positive empirical mean",
     }
@@ -220,12 +213,16 @@ def draw_empirical_reward(reward_arrays, rng, arm):
     return float(rewards[rng.integers(0, len(rewards))])
 
 
-def sample_clean_warm_start(metadata, repeat_id):
-    rng_clean = np.random.default_rng(seed + repeat_id)
+def warm_start_seed(K_value, repeat_id):
+    return seed + 100_000 * int(repeat_id) + int(K_value)
+
+
+def sample_clean_warm_start(metadata, repeat_id, K_value=None):
+    K_value = len(metadata["selected_reward_arrays"]) if K_value is None else int(K_value)
+    rng_clean = np.random.default_rng(warm_start_seed(K_value, repeat_id))
     clean_rewards = []
     for rewards_i in metadata["selected_reward_arrays"]:
-        replace_i = len(rewards_i) < N0_i
-        clean_rewards.append(rng_clean.choice(rewards_i, size=N0_i, replace=replace_i))
+        clean_rewards.append(rng_clean.choice(rewards_i, size=N0_i, replace=True))
     clean_sum = np.array([arr.sum() for arr in clean_rewards], dtype=float)
     clean_mean = clean_sum / float(N0_i)
     return clean_sum, clean_mean
@@ -252,10 +249,8 @@ def configure_bandit(metadata, repeat_id):
     bandit.seed = seed + repeat_id * 10_000
     bandit.fake_reward_target = fake_reward_target
     bandit.fake_reward_non_target = fake_reward_non_target
-    bandit.target_lower_bound_override = None
     bandit.max_fixed_point_iters = max_fixed_point_iters
-    bandit.LEGality_tol = LEGality_tol
-    bandit.simulate_online = False
+    bandit.simulate_online = True
 
 
 def flatten_result(res):
@@ -279,6 +274,7 @@ def flatten_result(res):
         "legality_check": res["legality_check"],
         "allocation_json": json.dumps(allocation, sort_keys=True),
         "online_counts_json": json.dumps(online_counts, sort_keys=True),
+        "search_log_json": json.dumps(res["search_log"], sort_keys=True),
     }
     for i in range(K):
         row[f"n_{i + 1}"] = allocation[f"n_{i + 1}"]
@@ -306,6 +302,7 @@ def write_results(rows):
         "legality_check",
         "allocation_json",
         "online_counts_json",
+        "search_log_json",
     ]
     fieldnames.extend([f"n_{i + 1}" for i in range(K)])
     fieldnames.extend([f"N_on_{i + 1}" for i in range(K)])
@@ -340,24 +337,27 @@ def Main():
 
     rows = []
     clean_summaries = []
-    for repeat_id in range(NUM_REPEATS):
-        configure_bandit(metadata, repeat_id)
-        clean_sum, clean_mean = sample_clean_warm_start(metadata, repeat_id)
-        clean_summaries.append(clean_sum.tolist())
-        clean_ucb_rows = bandit.simulate_clean_fixed_T_grid(clean_sum, clean_mean, T_GRID, "UCB clean", 303)
-        clean_ts_rows = bandit.simulate_clean_fixed_T_grid(clean_sum, clean_mean, T_GRID, "TS clean", 404)
-        for T in T_GRID:
-            repeat_rows = [
-                bandit.UCB_fixed_T(clean_sum, clean_mean, T),
-                bandit.UCB_direct_fixed_T(clean_sum, clean_mean, T),
-                bandit.TS_fixed_T(clean_sum, clean_mean, T),
-                bandit.TS_direct_fixed_T(clean_sum, clean_mean, T),
-                clean_ucb_rows[T],
-                clean_ts_rows[T],
-            ]
-            for row in repeat_rows:
-                row["repeat"] = repeat_id
-            rows.extend(repeat_rows)
+    with tqdm(total=NUM_REPEATS * len(T_GRID), desc="Fixed-T sweep", unit="case", dynamic_ncols=True) as progress:
+        for repeat_id in range(NUM_REPEATS):
+            configure_bandit(metadata, repeat_id)
+            clean_sum, clean_mean = sample_clean_warm_start(metadata, repeat_id)
+            clean_summaries.append(clean_sum.tolist())
+            clean_ucb_rows = bandit.simulate_clean_fixed_T_grid(clean_sum, clean_mean, T_GRID, "UCB clean", 303)
+            clean_ts_rows = bandit.simulate_clean_fixed_T_grid(clean_sum, clean_mean, T_GRID, "TS clean", 404)
+            for T in T_GRID:
+                progress.set_postfix(repeat=repeat_id + 1, T=T)
+                repeat_rows = [
+                    bandit.UCB_fixed_T(clean_sum, clean_mean, T),
+                    bandit.UCB_direct_fixed_T(clean_sum, clean_mean, T),
+                    bandit.TS_fixed_T(clean_sum, clean_mean, T),
+                    bandit.TS_direct_fixed_T(clean_sum, clean_mean, T),
+                    clean_ucb_rows[T],
+                    clean_ts_rows[T],
+                ]
+                for row in repeat_rows:
+                    row["repeat"] = repeat_id
+                rows.extend(repeat_rows)
+                progress.update(1)
 
     validate_results(rows)
     write_results(rows)
@@ -370,8 +370,7 @@ def Main():
     print("target_selection = smallest positive empirical mean")
     print(f"reward_distribution = {reward_distribution}")
     print(f"reward_source = {metadata['reward_source']}")
-    print(f"rating_normalization = (rating - {metadata['rating_min']}) / "
-          f"({metadata['rating_max']} - {metadata['rating_min']})")
+    print(f"positive_rating_rule = rating >= {POSITIVE_RATING_THRESHOLD:g}")
     print(f"K = {K}, target_arm = {target_arm}, delta = {delta}, xi = {xi}")
     print(f"r_l = {r_l}, r_u = {r_u}, R = {R}, sigma = {sigma}")
     print(f"N0_i = {N0_i}, clean_offline_mode = {clean_offline_mode}, seed = {seed}")
@@ -388,7 +387,7 @@ def Main():
         print(
             f"arm_{idx}: movie_id={movie_id}, title={title}, "
             f"rating_count={int(metadata['selected_counts'][idx - 1])}, "
-            f"normalized_reward_sum={metadata['selected_reward_sums'][idx - 1]:.6f}, "
+            f"positive_reward_sum={metadata['selected_reward_sums'][idx - 1]:.0f}, "
             f"mu_{idx}={metadata['mu'][idx - 1]:.6f}{marker}"
         )
     print("-" * 100)

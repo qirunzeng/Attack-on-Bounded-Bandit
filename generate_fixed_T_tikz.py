@@ -18,14 +18,20 @@ def read_rows():
     if not RESULTS_FILE.exists():
         raise FileNotFoundError(f"Missing {RESULTS_FILE}. Run mlrunner.py first.")
     with RESULTS_FILE.open("r", newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+        reader = csv.DictReader(f)
+        if "search_log_json" not in (reader.fieldnames or []):
+            raise RuntimeError(f"Stale result schema in {RESULTS_FILE}; rerun mlrunner.py.")
+        return list(reader)
 
 
 def read_baseline_rows():
     if not BASELINE_RESULTS_FILE.exists():
         return []
     with BASELINE_RESULTS_FILE.open("r", newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+        reader = csv.DictReader(f)
+        if "H_base" not in (reader.fieldnames or []):
+            raise RuntimeError(f"Stale result schema in {BASELINE_RESULTS_FILE}; rerun fixed_T_baseline_runner.py.")
+        return list(reader)
 
 
 def mean_std(values):
@@ -50,7 +56,7 @@ def aggregate(rows):
         cost_grouped[(algorithm, T)].append(float(row["Cost_n"]))
         target_on = float(row.get("N_on_10") or 0.0)
         target_off = float(row.get("n_10") or 0.0)
-        total_target_share_grouped[(algorithm, T)].append((target_on + target_off) / T)
+        total_target_share_grouped[(algorithm, T)].append((mlrunner.N0_i + target_on + target_off) / T)
         if row["target_online_ratio"] != "" and "clean" not in algorithm:
             success_ratio_grouped[(algorithm, T)].append(float(row["target_online_ratio"]))
         s_t_by_T[T] = float(row["S_T"])
@@ -73,15 +79,13 @@ def aggregate_baseline(rows):
     cost_grouped = defaultdict(list)
     target_share_grouped = defaultdict(list)
     for row in rows:
+        if row.get("status") == "infeasible":
+            continue
         T = int(row["T"])
         algorithm = row["algorithm"]
-        # The sole feasible fixed-T Xu2021 point lies near 10^6 and would
-        # compress every other cost curve.  Keep it in the CSV/text, not here.
-        if algorithm.startswith("Xu2021 observation-free"):
-            continue
         cost_grouped[(algorithm, T)].append(float(row["native_cost"]))
-        if row.get("target_pulls"):
-            target_share_grouped[(algorithm, T)].append(float(row["target_pulls"]) / T)
+        if row.get("target_ratio") not in {None, ""}:
+            target_share_grouped[(algorithm, T)].append(float(row["target_ratio"]))
     return (
         {key: mean_std(values) for key, values in cost_grouped.items()},
         {key: mean_std(values) for key, values in target_share_grouped.items()},
@@ -159,7 +163,7 @@ def shared_cost_legend():
     ymax=1,
     width=0.62\linewidth,
     height=2.0cm,
-    legend columns=4,
+    legend columns=5,
     legend style={
         draw=black!40,
         fill=white,
@@ -180,6 +184,8 @@ def shared_cost_legend():
 \addlegendentry{Direct}
 \addlegendimage{black!55, dashed, thick}
 \addlegendentry{Scaled $S_T$}
+\addlegendimage{mypurple, thick, mark=diamond*, mark options={fill=white, draw=mypurple}}
+\addlegendentry{Xu et al.}
 \end{axis}
 \end{tikzpicture}"""
 
@@ -194,7 +200,7 @@ def shared_ratio_legend():
     ymax=1,
     width=0.86\linewidth,
     height=2.0cm,
-    legend columns=6,
+    legend columns=7,
     legend style={
         draw=black!40,
         fill=white,
@@ -219,6 +225,8 @@ def shared_ratio_legend():
 \addlegendentry{Threshold $N_K^{\on}/H$}
 \addlegendimage{myblue, thick, mark=triangle*, mark options={fill=white, draw=myblue}}
 \addlegendentry{Direct $N_K^{\on}/H$}
+\addlegendimage{mypurple, thick, mark=square*, mark options={fill=white, draw=mypurple}}
+\addlegendentry{Xu et al. $N_K/T$}
 \end{axis}
 \end{tikzpicture}"""
 
@@ -498,6 +506,7 @@ def write_figure(rows):
     }},
 ]
 {ucb_cost_jun}
+{ucb_cost_xu}
 {ucb_appendix}
 {ucb_direct}
 \addplot[
@@ -544,6 +553,7 @@ def write_figure(rows):
     }},
 ]
 {ts_cost_zuo}
+{ts_cost_xu}
 {ts_appendix}
 {ts_direct}
 \addplot[
@@ -594,6 +604,7 @@ def write_figure(rows):
 ]
 {ucb_share_clean}
 {ucb_share_jun}
+{ucb_share_xu}
 {ucb_share_appendix}
 {ucb_share_direct}
 {ucb_success_appendix}
@@ -638,6 +649,7 @@ def write_figure(rows):
 ]
 {ts_share_clean}
 {ts_share_zuo}
+{ts_share_xu}
 {ts_share_appendix}
 {ts_share_direct}
 {ts_success_appendix}

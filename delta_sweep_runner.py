@@ -1,8 +1,10 @@
 import csv
+import json
 import math
 from pathlib import Path
 
 import numpy as np
+from tqdm import tqdm
 
 import bandit
 import mlrunner
@@ -17,7 +19,7 @@ NUM_REPEATS = 10
 SEED = 2026
 
 
-def configure(mu, delta_k, repeat_id):
+def configure(mu, reward_arrays, repeat_id):
     bandit.K = K
     bandit.target_arm = K
     bandit.delta = 0.05
@@ -28,29 +30,18 @@ def configure(mu, delta_k, repeat_id):
     bandit.sigma = 0.5
     bandit.mu = np.asarray(mu, dtype=float)
     bandit.mu_non_target = bandit.mu[:-1].tolist()
-    bandit.mu_target = float(delta_k)
-    # This is a controlled synthetic Delta_K sweep: the target mean is
-    # deliberately overwritten, so no fixed MovieLens target array can have
-    # the prescribed mean.  The main MovieLens experiments use empirical data.
-    bandit.reward_source = "bernoulli"
-    bandit.empirical_reward_arrays = None
+    bandit.mu_target = float(bandit.mu[-1])
+    bandit.reward_source = "empirical"
+    bandit.empirical_reward_arrays = reward_arrays
     bandit.N0_i = 5
     bandit.seed = SEED + 10_000 * repeat_id
     bandit.fake_reward_target = 1.0
     bandit.fake_reward_non_target = 0.0
-    bandit.simulate_online = False
-    # This controlled study supplies the target-side lower certificate directly.
-    bandit.target_lower_bound_override = float(delta_k)
+    bandit.simulate_online = True
 
 
 def sample_clean_non_targets(metadata, delta_k, repeat_id):
-    rng = np.random.default_rng(SEED + 100_000 * repeat_id)
-    clean_sum = np.array([
-        rng.choice(rewards, size=5, replace=len(rewards) < 5).sum()
-        for rewards in metadata["selected_reward_arrays"]
-    ], dtype=float)
-    # Use a deterministic target arm at the prescribed gap, so its genuine
-    # empirical average equals the supplied target-side certificate.
+    clean_sum, _ = mlrunner.sample_clean_warm_start(metadata, repeat_id, K)
     clean_sum[-1] = 5.0 * delta_k
     return clean_sum, clean_sum / 5.0
 
@@ -62,58 +53,88 @@ def xu_native_cost(delta_k):
     return float(2 * phase)
 
 
+def simulate_xu(delta_k, reward_arrays, clean_sum, repeat_id, learner):
+    native_cost = xu_native_cost(delta_k)
+    H_base = T_FIXED - 5 * K
+    if not math.isfinite(native_cost) or native_cost >= H_base:
+        return native_cost, "infeasible", None
+
+    c1 = int(native_cost // 2)
+    c2 = c1
+    rng = np.random.default_rng(SEED + 700_000 * repeat_id + (0 if learner == "UCB" else 1))
+    counts = np.full(K, 5, dtype=int)
+    sums = np.asarray(clean_sum, dtype=float).copy()
+    target_pulls = 0
+    for deployment_step in range(1, H_base + 1):
+        means = sums / counts
+        if learner == "UCB":
+            arm = int(np.argmax(means + np.sqrt(math.log(T_FIXED) / counts)))
+        else:
+            arm = int(np.argmax(rng.normal(loc=means, scale=1.0 / np.sqrt(counts))))
+        if deployment_step <= c1:
+            reward = 0.0
+        elif deployment_step <= c1 + c2:
+            reward = 1.0 if arm == K - 1 else 0.0
+        else:
+            reward = mlrunner.draw_empirical_reward(reward_arrays, rng, arm)
+        counts[arm] += 1
+        sums[arm] += reward
+        target_pulls += int(arm == K - 1)
+    return native_cost, "simulated", target_pulls / H_base
+
+
 def main():
     metadata = mlrunner.load_movielens(K)
     s_t = T_FIXED ** (2.0 / 3.0) * (K * math.log(T_FIXED)) ** (1.0 / 3.0)
     rows = []
-    for repeat_id in range(NUM_REPEATS):
-        for multiplier in MULTIPLIERS:
-            delta_k = multiplier * s_t / T_FIXED
-            mu = np.asarray(metadata["mu"], dtype=float).copy()
-            mu[-1] = delta_k
-            configure(mu, delta_k, repeat_id)
-            clean_sum, clean_mean = sample_clean_non_targets(metadata, delta_k, repeat_id)
-            for result in (
-                bandit.UCB_fixed_T(clean_sum, clean_mean, T_FIXED),
-                bandit.UCB_direct_fixed_T(clean_sum, clean_mean, T_FIXED),
-                bandit.TS_fixed_T(clean_sum, clean_mean, T_FIXED),
-                bandit.TS_direct_fixed_T(clean_sum, clean_mean, T_FIXED),
-            ):
-                rows.append({
-                    "algorithm": result["algorithm"],
-                    "repeat": repeat_id,
-                    "multiplier": multiplier,
-                    "Delta_K": delta_k,
-                    "S_T_over_T": s_t / T_FIXED,
-                    "status": result["status"],
-                    "cost": result["Cost_n"],
-                })
-            xu_cost = xu_native_cost(delta_k)
-            rows.append({
-                "algorithm": "Xu2021 observation-free UCB",
-                "repeat": repeat_id,
-                "multiplier": multiplier,
-                "Delta_K": delta_k,
-                "S_T_over_T": s_t / T_FIXED,
-                "status": "ok" if xu_cost < T_FIXED else "infeasible",
-                "cost": "" if not math.isfinite(xu_cost) else xu_cost,
-            })
-            rows.append({
-                "algorithm": "Xu2021 observation-free TS",
-                "repeat": repeat_id,
-                "multiplier": multiplier,
-                "Delta_K": delta_k,
-                "S_T_over_T": s_t / T_FIXED,
-                "status": "ok" if xu_cost < T_FIXED else "infeasible",
-                "cost": "" if not math.isfinite(xu_cost) else xu_cost,
-            })
+    with tqdm(total=NUM_REPEATS * len(MULTIPLIERS), desc="Delta sweep", unit="case", dynamic_ncols=True) as progress:
+        for repeat_id in range(NUM_REPEATS):
+            for multiplier in MULTIPLIERS:
+                progress.set_postfix(repeat=repeat_id + 1, multiplier=multiplier)
+                delta_k = multiplier * s_t / T_FIXED
+                mu = np.asarray(metadata["mu"], dtype=float).copy()
+                mu[-1] = delta_k
+                reward_arrays = list(metadata["selected_reward_arrays"])
+                reward_arrays[-1] = np.array([delta_k], dtype=float)
+                configure(mu, reward_arrays, repeat_id)
+                clean_sum, clean_mean = sample_clean_non_targets(metadata, delta_k, repeat_id)
+                for result in (
+                    bandit.UCB_fixed_T(clean_sum, clean_mean, T_FIXED),
+                    bandit.UCB_direct_fixed_T(clean_sum, clean_mean, T_FIXED),
+                    bandit.TS_fixed_T(clean_sum, clean_mean, T_FIXED),
+                    bandit.TS_direct_fixed_T(clean_sum, clean_mean, T_FIXED),
+                ):
+                    rows.append({
+                        "algorithm": result["algorithm"],
+                        "repeat": repeat_id,
+                        "multiplier": multiplier,
+                        "Delta_K": delta_k,
+                        "S_T_over_T": s_t / T_FIXED,
+                        "status": result["status"],
+                        "cost": result["Cost_n"],
+                        "target_online_ratio": result["target_online_ratio"],
+                        "search_log_json": json.dumps(result["search_log"], sort_keys=True),
+                    })
+                for learner in ("UCB", "TS"):
+                    xu_cost, xu_status, xu_ratio = simulate_xu(delta_k, reward_arrays, clean_sum, repeat_id, learner)
+                    rows.append({
+                        "algorithm": f"Xu2021 observation-free {learner}",
+                        "repeat": repeat_id,
+                        "multiplier": multiplier,
+                        "Delta_K": delta_k,
+                        "S_T_over_T": s_t / T_FIXED,
+                        "status": xu_status,
+                        "cost": "" if not math.isfinite(xu_cost) else xu_cost,
+                        "target_online_ratio": "" if xu_ratio is None else xu_ratio,
+                        "search_log_json": "",
+                    })
+                progress.update(1)
 
     RESULTS_FILE.parent.mkdir(parents=True, exist_ok=True)
     with RESULTS_FILE.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
         writer.writeheader()
         writer.writerows(rows)
-    bandit.target_lower_bound_override = None
     print(f"wrote {RESULTS_FILE}")
     print(f"T={T_FIXED}, K={K}, S_T/T={s_t / T_FIXED:.8f}")
 

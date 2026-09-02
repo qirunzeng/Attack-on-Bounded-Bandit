@@ -3,6 +3,7 @@ import math
 from pathlib import Path
 
 import numpy as np
+from tqdm import tqdm
 
 import mlrunner
 
@@ -25,27 +26,23 @@ def beta(K_value, n):
     return math.sqrt((2.0 * SIGMA * SIGMA / n) * math.log((math.pi**2) * K_value * (n**2) / (3.0 * DELTA)))
 
 
-def initial_arm(t, K_value):
-    return t - 1 if t <= K_value else None
-
-
-def simulate_jun_ucb(reward_arrays, T, repeat_id):
+def simulate_jun_ucb(reward_arrays, clean_sum, T, repeat_id):
     rng = np.random.default_rng(SEED + 500_000 * repeat_id + T)
-    counts = np.zeros(K, dtype=int)
-    sums = np.zeros(K, dtype=float)
+    counts = np.full(K, mlrunner.N0_i, dtype=int)
+    sums = np.asarray(clean_sum, dtype=float).copy()
+    H_base = T - mlrunner.N0_i * K
+    if H_base <= 0:
+        raise ValueError(f"T={T} does not leave any online deployment after the shared warm-start.")
     target_pulls = 0
     attack_count = 0
     requested_cost = 0.0
     clipped_cost = 0.0
 
-    for t in range(1, T + 1):
-        init = initial_arm(t, K)
-        if init is not None:
-            arm = init
-        else:
-            means = sums / np.maximum(counts, 1)
-            index = means + 3.0 * SIGMA * np.sqrt(math.log(t) / np.maximum(counts, 1))
-            arm = int(np.argmax(index))
+    for deployment_step in range(1, H_base + 1):
+        t = mlrunner.N0_i * K + deployment_step
+        means = sums / counts
+        index = means + 3.0 * SIGMA * np.sqrt(math.log(t) / counts)
+        arm = int(np.argmax(index))
 
         # Previous Scheme A:
         # reward0 = 1.0 if rng.random() < mu[arm] else 0.0
@@ -70,34 +67,35 @@ def simulate_jun_ucb(reward_arrays, T, repeat_id):
         "algorithm": "Jun2018 clipped UCB",
         "repeat": repeat_id,
         "T": T,
-        "status": "ok" if target_pulls / T >= 0.99 else "failed",
+        "status": "ok" if target_pulls / H_base >= 0.99 else "failed",
         "native_cost": attack_count,
-        "target_ratio": target_pulls / T,
+        "target_ratio": (mlrunner.N0_i + target_pulls) / T,
+        "target_online_ratio": target_pulls / H_base,
+        "H_base": H_base,
         "target_pulls": target_pulls,
-        "non_target_pulls": T - target_pulls,
+        "non_target_pulls": H_base - target_pulls,
         "clipped_cost": clipped_cost,
         "requested_cost": requested_cost,
     }
 
 
-def simulate_zuo_ts(reward_arrays, T, repeat_id):
+def simulate_zuo_ts(reward_arrays, clean_sum, T, repeat_id):
     rng = np.random.default_rng(SEED + 600_000 * repeat_id + T)
-    counts = np.zeros(K, dtype=int)
-    sums = np.zeros(K, dtype=float)
+    counts = np.full(K, mlrunner.N0_i, dtype=int)
+    sums = np.asarray(clean_sum, dtype=float).copy()
+    H_base = T - mlrunner.N0_i * K
+    if H_base <= 0:
+        raise ValueError(f"T={T} does not leave any online deployment after the shared warm-start.")
     target_pulls = 0
     attack_count = 0
     requested_cost = 0.0
     clipped_cost = 0.0
     ts_const = math.sqrt(8.0 * math.log((math.pi**2) * K / (3.0 * DELTA)))
 
-    for t in range(1, T + 1):
-        init = initial_arm(t, K)
-        if init is not None:
-            arm = init
-        else:
-            means = sums / np.maximum(counts, 1)
-            samples = rng.normal(loc=means, scale=1.0 / np.sqrt(np.maximum(counts, 1)))
-            arm = int(np.argmax(samples))
+    for deployment_step in range(1, H_base + 1):
+        means = sums / counts
+        samples = rng.normal(loc=means, scale=1.0 / np.sqrt(counts))
+        arm = int(np.argmax(samples))
 
         # Previous Scheme A:
         # reward0 = 1.0 if rng.random() < mu[arm] else 0.0
@@ -124,44 +122,46 @@ def simulate_zuo_ts(reward_arrays, T, repeat_id):
         "algorithm": "Zuo2024 clipped TS",
         "repeat": repeat_id,
         "T": T,
-        "status": "ok" if target_pulls / T >= 0.99 else "failed",
+        "status": "ok" if target_pulls / H_base >= 0.99 else "failed",
         "native_cost": attack_count,
-        "target_ratio": target_pulls / T,
+        "target_ratio": (mlrunner.N0_i + target_pulls) / T,
+        "target_online_ratio": target_pulls / H_base,
+        "H_base": H_base,
         "target_pulls": target_pulls,
-        "non_target_pulls": T - target_pulls,
+        "non_target_pulls": H_base - target_pulls,
         "clipped_cost": clipped_cost,
         "requested_cost": requested_cost,
     }
 
 
-def xu2021_phase_cost(mu_target, reward_arrays, T, repeat_id, learner):
+def xu2021_phase_cost(mu_target, reward_arrays, clean_sum, T, repeat_id, learner):
     phase = math.ceil(K * math.log(T) / (mu_target**2))
+    c1 = phase
+    c2 = phase
     native_cost = 2 * phase
-    sample_equivalent_cost = 2 * K * phase
-    feasible = native_cost < T
+    H_base = T - mlrunner.N0_i * K
+    feasible = native_cost < H_base
     target_pulls = ""
     non_target_pulls = ""
     target_ratio = ""
+    target_online_ratio = ""
     post_phase_ratio = ""
     if feasible:
         rng = np.random.default_rng(SEED + 700_000 * repeat_id + T + (0 if learner == "UCB" else 1))
-        counts = np.zeros(K, dtype=int)
-        successes = np.zeros(K, dtype=float)
+        counts = np.full(K, mlrunner.N0_i, dtype=int)
+        successes = np.asarray(clean_sum, dtype=float).copy()
         target_pulls = 0
         post_target_pulls = 0
-        for t in range(1, T + 1):
+        for deployment_step in range(1, H_base + 1):
             if learner == "UCB":
-                init = initial_arm(t, K)
-                if init is not None:
-                    arm = init
-                else:
-                    means = successes / np.maximum(counts, 1)
-                    arm = int(np.argmax(means + np.sqrt(math.log(T) / np.maximum(counts, 1))))
+                means = successes / counts
+                arm = int(np.argmax(means + np.sqrt(math.log(T) / counts)))
             else:
-                arm = int(np.argmax(rng.beta(successes + 1.0, counts - successes + 1.0)))
-            if t <= phase:
+                means = successes / counts
+                arm = int(np.argmax(rng.normal(loc=means, scale=1.0 / np.sqrt(counts))))
+            if deployment_step <= c1:
                 reward = 0.0
-            elif t <= native_cost:
+            elif deployment_step <= c1 + c2:
                 reward = 1.0 if arm == K - 1 else 0.0
             else:
                 # Previous Scheme A:
@@ -171,24 +171,28 @@ def xu2021_phase_cost(mu_target, reward_arrays, T, repeat_id, learner):
             successes[arm] += reward
             if arm == K - 1:
                 target_pulls += 1
-                if t > native_cost:
+                if deployment_step > native_cost:
                     post_target_pulls += 1
-        non_target_pulls = T - target_pulls
-        target_ratio = target_pulls / T
-        post_phase_ratio = post_target_pulls / (T - native_cost)
+        non_target_pulls = H_base - target_pulls
+        target_ratio = (mlrunner.N0_i + target_pulls) / T
+        target_online_ratio = target_pulls / H_base
+        post_phase_ratio = post_target_pulls / (H_base - native_cost)
     return {
         "algorithm": f"Xu2021 observation-free {learner}",
         "repeat": repeat_id,
         "T": T,
         "status": "simulated" if feasible else "infeasible",
         "native_cost": float(native_cost),
+        "H_base": H_base,
+        "C1": c1,
+        "C2": c2,
         "target_ratio": target_ratio,
+        "target_online_ratio": target_online_ratio,
         "post_phase_ratio": post_phase_ratio,
         "target_pulls": target_pulls,
         "non_target_pulls": non_target_pulls,
         "clipped_cost": 0.0,
         "requested_cost": float(native_cost),
-        "sample_equivalent_cost": float(sample_equivalent_cost),
     }
 
 
@@ -200,13 +204,16 @@ def write_results(rows):
         "T",
         "status",
         "native_cost",
+        "H_base",
+        "C1",
+        "C2",
         "target_ratio",
+        "target_online_ratio",
         "post_phase_ratio",
         "target_pulls",
         "non_target_pulls",
         "clipped_cost",
         "requested_cost",
-        "sample_equivalent_cost",
     ]
     with RESULTS_FILE.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -219,16 +226,21 @@ def Main():
     mu = metadata["mu"]
     reward_arrays = metadata["selected_reward_arrays"]
     rows = []
-    for repeat_id in range(NUM_REPEATS):
-        for T in T_GRID:
-            rows.append(simulate_jun_ucb(reward_arrays, T, repeat_id))
-            rows.append(simulate_zuo_ts(reward_arrays, T, repeat_id))
-            rows.append(xu2021_phase_cost(float(mu[-1]), reward_arrays, T, repeat_id, "UCB"))
-            rows.append(xu2021_phase_cost(float(mu[-1]), reward_arrays, T, repeat_id, "TS"))
+    with tqdm(total=NUM_REPEATS * len(T_GRID), desc="Fixed-T baselines", unit="case", dynamic_ncols=True) as progress:
+        for repeat_id in range(NUM_REPEATS):
+            clean_sum, _ = mlrunner.sample_clean_warm_start(metadata, repeat_id, K)
+            for T in T_GRID:
+                progress.set_postfix(repeat=repeat_id + 1, T=T)
+                rows.append(simulate_jun_ucb(reward_arrays, clean_sum, T, repeat_id))
+                rows.append(simulate_zuo_ts(reward_arrays, clean_sum, T, repeat_id))
+                rows.append(xu2021_phase_cost(float(mu[-1]), reward_arrays, clean_sum, T, repeat_id, "UCB"))
+                rows.append(xu2021_phase_cost(float(mu[-1]), reward_arrays, clean_sum, T, repeat_id, "TS"))
+                progress.update(1)
 
     for row in rows:
-        row.setdefault("sample_equivalent_cost", "")
         row.setdefault("post_phase_ratio", "")
+        row.setdefault("C1", "")
+        row.setdefault("C2", "")
 
     write_results(rows)
     print(f"wrote {RESULTS_FILE}")

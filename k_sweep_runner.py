@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+from tqdm import tqdm
 
 import bandit
 import mlrunner
@@ -43,18 +44,11 @@ def configure(K, metadata, repeat_id):
     bandit.seed = SEED + 10_000 * repeat_id + K
     bandit.fake_reward_target = R_U
     bandit.fake_reward_non_target = R_L
-    bandit.target_lower_bound_override = None
-    bandit.simulate_online = False
+    bandit.simulate_online = True
 
 
 def sample_clean_warm_start(metadata, K, repeat_id):
-    rng = np.random.default_rng(SEED + 100_000 * repeat_id + K)
-    clean_sum = np.array([
-        rng.choice(rewards, size=N0_I, replace=len(rewards) < N0_I).sum()
-        for rewards in metadata["selected_reward_arrays"]
-    ], dtype=float)
-    clean_mean = clean_sum / float(N0_I)
-    return clean_sum, clean_mean
+    return mlrunner.sample_clean_warm_start(metadata, repeat_id, K)
 
 
 def add_decomposition(row, K):
@@ -86,7 +80,9 @@ def flatten(row):
         "S_T": f"{row['S_T']:.12g}",
         "normalized_cost": f"{row['normalized_cost']:.12g}",
         "z_star": "" if row["z_star"] is None else f"{row['z_star']:.12g}",
+        "target_online_ratio": "" if row["target_online_ratio"] is None else f"{row['target_online_ratio']:.12g}",
         "allocation_json": json.dumps(allocation, sort_keys=True),
+        "search_log_json": json.dumps(row["search_log"], sort_keys=True),
     }
     for i in range(1, row["K"] + 1):
         out[f"n_{i}"] = allocation[f"n_{i}"]
@@ -111,7 +107,9 @@ def write_results(rows):
         "S_T",
         "normalized_cost",
         "z_star",
+        "target_online_ratio",
         "allocation_json",
+        "search_log_json",
     ]
     fieldnames.extend(f"n_{i}" for i in range(1, max_K + 1))
     with RESULTS_FILE.open("w", newline="", encoding="utf-8") as f:
@@ -132,19 +130,22 @@ def validate(rows):
 def Main():
     rows = []
     instances = {K: mlrunner.load_movielens(K) for K in K_GRID}
-    for repeat_id in range(NUM_REPEATS):
-        for K in K_GRID:
-            metadata = instances[K]
-            configure(K, metadata, repeat_id)
-            clean_sum, clean_mean = sample_clean_warm_start(metadata, K, repeat_id)
-            for result in [
-                bandit.UCB_fixed_T(clean_sum, clean_mean, T_FIXED),
-                bandit.UCB_direct_fixed_T(clean_sum, clean_mean, T_FIXED),
-                bandit.TS_fixed_T(clean_sum, clean_mean, T_FIXED),
-                bandit.TS_direct_fixed_T(clean_sum, clean_mean, T_FIXED),
-            ]:
-                result["repeat"] = repeat_id
-                rows.append(add_decomposition(result, K))
+    with tqdm(total=NUM_REPEATS * len(K_GRID), desc="K sweep", unit="case", dynamic_ncols=True) as progress:
+        for repeat_id in range(NUM_REPEATS):
+            for K in K_GRID:
+                progress.set_postfix(repeat=repeat_id + 1, K=K)
+                metadata = instances[K]
+                configure(K, metadata, repeat_id)
+                clean_sum, clean_mean = sample_clean_warm_start(metadata, K, repeat_id)
+                for result in [
+                    bandit.UCB_fixed_T(clean_sum, clean_mean, T_FIXED),
+                    bandit.UCB_direct_fixed_T(clean_sum, clean_mean, T_FIXED),
+                    bandit.TS_fixed_T(clean_sum, clean_mean, T_FIXED),
+                    bandit.TS_direct_fixed_T(clean_sum, clean_mean, T_FIXED),
+                ]:
+                    result["repeat"] = repeat_id
+                    rows.append(add_decomposition(result, K))
+                progress.update(1)
 
     validate(rows)
     write_results(rows)

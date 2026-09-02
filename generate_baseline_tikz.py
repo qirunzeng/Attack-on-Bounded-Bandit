@@ -15,7 +15,10 @@ def read_rows():
     if not RESULTS_FILE.exists():
         raise FileNotFoundError(f"Missing {RESULTS_FILE}. Run baseline_comparison_runner.py first.")
     with RESULTS_FILE.open("r", newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+        reader = csv.DictReader(f)
+        if "H_base" not in (reader.fieldnames or []):
+            raise RuntimeError(f"Stale result schema in {RESULTS_FILE}; rerun baseline_comparison_runner.py.")
+        return list(reader)
 
 
 def mean_std(values):
@@ -30,6 +33,8 @@ def aggregate(rows):
     cost = defaultdict(list)
     ratio = defaultdict(list)
     for row in rows:
+        if row.get("status") == "infeasible":
+            continue
         K = int(row["K"])
         algorithm = row["algorithm"]
         cost[(algorithm, K)].append(float(row["native_cost"]))
@@ -210,7 +215,7 @@ def write_figure(rows):
 \end{{axis}}
 \end{{tikzpicture}}
 \end{{minipage}}}}
-\caption{{Comparison with online baselines at $T=200{{,}}000$ over ten repeats. Xu2021 is reported in its native corruption-round cost for the theorem-calibrated phase attack; its sample-equivalent cost is larger by a factor of $K$ and is stored in the CSV. Jun2018 and Zuo2024 are implemented as online non-target lowering attacks, but the realized corrupted reward is clipped below by $\rl$.}}
+\caption{{Comparison with online baselines at $T=200{{,}}000$ over ten repeats. Xu2021 is reported in its native corrupted-round cost with $C_1=C_2=\lceil K\log(T)/\mu_K^2\rceil$. Jun2018 and Zuo2024 are implemented as online non-target lowering attacks, with the realized corrupted reward clipped below by $\rl$.}}
 \label{{fig:online_baseline_comparison}}
 \end{{figure*}}
 """

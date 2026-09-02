@@ -21,7 +21,11 @@ def read_csv(path):
     if not path.exists():
         raise FileNotFoundError(f"Missing {path}. Run the corresponding experiment runner first.")
     with path.open("r", newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+        reader = csv.DictReader(f)
+        required = "target_online_ratio" if path == K_RESULTS_FILE else "H_base"
+        if required not in (reader.fieldnames or []):
+            raise RuntimeError(f"Stale result schema in {path}; rerun the corresponding experiment runner.")
+        return list(reader)
 
 
 def mean_std(values):
@@ -42,14 +46,14 @@ def aggregate_construction(rows):
         grouped[key_base + ("total",)].append(float(row["Cost_n"]))
         grouped[key_base + ("target",)].append(float(row["target_cost"]))
         grouped[key_base + ("non_target_avg",)].append(float(row["non_target_avg_cost"]))
-        # Every certified offline construction selects the target throughout
-        # deployment.  N_K/T additionally counts the clean and injected
-        # target-arm observations in the learner's fixed internal horizon.
+        # N_K/T counts the clean, injected, and actually selected target-arm
+        # observations in the learner's fixed internal horizon.
         clean_total = float(row["T0"]) - float(row["Cost_n"])
         clean_target = clean_total / int(row["K"])
-        target_total = clean_target + float(row["target_cost"]) + float(row["H"])
+        target_online_ratio = float(row["target_online_ratio"])
+        target_total = clean_target + float(row["target_cost"]) + target_online_ratio * float(row["H"])
         grouped[key_base + ("target_total_ratio",)].append(target_total / float(row["T"]))
-        grouped[key_base + ("target_online_ratio",)].append(1.0)
+        grouped[key_base + ("target_online_ratio",)].append(target_online_ratio)
         s_t[int(row["K"])] = float(row["S_T"])
     return {key: mean_std(values) for key, values in grouped.items()}, s_t
 
@@ -63,8 +67,6 @@ def aggregate_baseline(rows):
             continue
         K = int(row["K"])
         algorithm = row["algorithm"]
-        if algorithm.startswith("Xu2021 observation-free") and K > 20:
-            continue
         cost[(algorithm, K)].append(float(row["native_cost"]))
         if row["target_ratio"] != "":
             ratio[(algorithm, K)].append(float(row["target_ratio"]))

@@ -99,10 +99,13 @@ def figure_content(stats, learner):
 def main():
     grouped = defaultdict(list)
     with RESULTS_FILE.open(newline="", encoding="utf-8") as handle:
-        for row in csv.DictReader(handle):
+        reader = csv.DictReader(handle)
+        if "target_online_ratio" not in (reader.fieldnames or []):
+            raise RuntimeError(f"Stale result schema in {RESULTS_FILE}; rerun delta_sweep_runner.py.")
+        for row in reader:
             # As elsewhere in the paper, Xu is not plotted when its native
             # corrupted-round budget reaches or exceeds the horizon.
-            if row["status"] != "ok" or row["cost"] == "":
+            if row["status"] not in {"ok", "simulated"} or row["cost"] == "":
                 continue
             grouped[(row["algorithm"], float(row["multiplier"]))].append(float(row["cost"]))
     stats = {key: mean_std(values) for key, values in grouped.items()}

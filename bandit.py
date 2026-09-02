@@ -1,6 +1,8 @@
 import math
+import warnings
 
 import numpy as np
+from scipy.optimize import minimize_scalar
 
 K = 10
 target_arm = K
@@ -23,11 +25,12 @@ seed = 2026
 fake_reward_target = r_u
 fake_reward_non_target = r_l
 max_fixed_point_iters = 100
-LEGality_tol = 1e-9
+DIRECT_EPSILON_NUM = 1e-12
+DIRECT_COARSE_POINTS = 4097
+DIRECT_REFINEMENT_POINTS = 1025
+DIRECT_REFINEMENTS = 5
+DIRECT_WIDTH_WARNING = 1e-10
 simulate_online = True
-# Optional certified lower bound for controlled sensitivity studies. Production
-# runners leave this as None and use the data-dependent confidence bound.
-target_lower_bound_override = None
 
 
 def draw_environment_reward(rng, arm):
@@ -82,6 +85,7 @@ def _attack_result(
     epsilon,
     legality_check,
     fixed_point_trace=None,
+    search_log=None,
     status="ok",
 ):
     cost_n = int(np.sum(n))
@@ -114,6 +118,7 @@ def _attack_result(
         "allocation": _allocation_dict(n),
         "online_counts": online_counts_out,
         "fixed_point_trace": [] if fixed_point_trace is None else fixed_point_trace,
+        "search_log": {} if search_log is None else search_log,
         "legality_check": legality_check,
     }
 
@@ -137,7 +142,7 @@ def _clean_result(algorithm_name, T, online_counts):
     )
 
 
-def _infeasible_result(algorithm_name, T, n, z_star, mu_minus_K, epsilon):
+def _infeasible_result(algorithm_name, T, n, z_star, mu_minus_K, epsilon, search_log=None, reason="infeasible_H_le_0"):
     T0 = int(np.sum(_n0()) + np.sum(n))
     H_online = int(T - T0)
     return _attack_result(
@@ -150,7 +155,8 @@ def _infeasible_result(algorithm_name, T, n, z_star, mu_minus_K, epsilon):
         z_star=z_star,
         mu_minus_K=mu_minus_K,
         epsilon=epsilon,
-        legality_check="infeasible_H_le_0",
+        legality_check=reason,
+        search_log=search_log,
         status="infeasible",
     )
 
@@ -164,11 +170,7 @@ def _certificate_online_counts(H_online):
 def _ucb_counts_for_T(clean_mean, T_design):
     target_index = _target_index()
     N0 = _n0()
-    mu_minus_K = (
-        max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
-        if target_lower_bound_override is None
-        else float(target_lower_bound_override)
-    )
+    mu_minus_K = max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
     epsilon = mu_minus_K - r_l
     logT = math.log(T_design)
     b = 3.0 * sigma * math.sqrt(logT / T_design)
@@ -235,10 +237,10 @@ def _ucb_counts_for_T(clean_mean, T_design):
 
     z_star = 0.5 * (a + c)
     n = np.zeros(K, dtype=int)
-    n[target_index] = int(math.ceil(h(z_star)))
+    n[target_index] = int(math.ceil(h(z_star))) + 1
     for i in range(K):
         if i != target_index:
-            n[i] = int(math.ceil(eta_i(i, z_star))) + 1
+            n[i] = int(math.ceil(eta_i(i, z_star)))
     return n, z_star, mu_minus_K, epsilon
 
 
@@ -248,7 +250,7 @@ def _check_ucb_cutoffs(clean_mean, T, n, z_star, mu_minus_K):
     logT = math.log(T)
     b = 3.0 * sigma * math.sqrt(logT / T)
     target_lhs = (n[target_index] * r_u + T * mu_minus_K) / (n[target_index] + T)
-    if target_lhs + LEGality_tol < z_star:
+    if target_lhs <= z_star:
         raise RuntimeError(f"UCB target cutoff check failed: lhs={target_lhs}, z_star={z_star}")
 
     for i in range(K):
@@ -257,7 +259,7 @@ def _check_ucb_cutoffs(clean_mean, T, n, z_star, mu_minus_K):
         x = float(n[i])
         denom = N0[i] + x
         g_val = clean_mean[i] - x * (clean_mean[i] - r_l) / denom + 3.0 * sigma * math.sqrt(logT / denom) - b
-        if g_val >= z_star + LEGality_tol:
+        if g_val > z_star:
             raise RuntimeError(f"UCB non-target cutoff check failed: arm={i + 1}, g_i(n_i)={g_val}, z_star={z_star}")
 
 
@@ -292,6 +294,152 @@ def UCB_fixed_T(clean_sum, clean_mean, T):
     return _attack_result("UCB appendix", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "passed")
 
 
+def _predicate_has_monotonicity_violation(evaluations):
+    """Return True if sampled False/True values violate a monotone predicate."""
+    seen_true = False
+    for _, value in sorted(evaluations.items()):
+        if value:
+            seen_true = True
+        elif seen_true:
+            return True
+    return False
+
+
+def _deterministic_segmented_first_true(predicate, hi, label, search_log):
+    """Deterministic segment detection followed by exact local refinement."""
+    segment_count = min(4096, hi + 1)
+    segment_width = max(1, int(math.ceil((hi + 1) / segment_count)))
+    event = {
+        "predicate": label,
+        "scan_low": 0,
+        "scan_high": int(hi),
+        "segments": int(segment_count),
+        "local_refinement": None,
+    }
+    search_log["nonmonotone_fallbacks"].append(event)
+    for segment_start in range(0, hi + 1, segment_width):
+        segment_end = min(hi, segment_start + segment_width - 1)
+        segment_has_true = any(predicate(value) for value in range(segment_start, segment_end + 1))
+        if segment_has_true:
+            event["local_refinement"] = {"low": int(segment_start), "high": int(segment_end)}
+            for value in range(segment_start, segment_end + 1):
+                if predicate(value):
+                    return value
+    return None
+
+
+def _minimal_integer_by_bracketing(predicate, max_n, label, search_log):
+    """Exponential bracket plus integer binary search with checked fallback."""
+    max_n = int(max_n)
+    search_log["integer_searches"] += 1
+    if max_n < 0:
+        return None
+
+    evaluations = {}
+
+    def checked(n):
+        n = int(n)
+        if n not in evaluations:
+            evaluations[n] = bool(predicate(n))
+        return evaluations[n]
+
+    def audit_interval(audit_hi, candidate=None):
+        audit_points = {int(round(x)) for x in np.linspace(0, audit_hi, min(33, audit_hi + 1))}
+        if candidate is not None:
+            audit_points.update(
+                value for value in (candidate - 2, candidate - 1, candidate, candidate + 1, candidate + 2)
+                if 0 <= value <= audit_hi
+            )
+        for value in sorted(audit_points):
+            checked(value)
+
+    if checked(0):
+        return 0
+
+    hi = 1
+    while hi < max_n and not checked(hi):
+        hi = min(max_n, hi * 2)
+    if not checked(hi):
+        audit_interval(hi)
+        if _predicate_has_monotonicity_violation(evaluations):
+            return _deterministic_segmented_first_true(predicate, hi, label, search_log)
+        return None
+
+    bracket_hi = hi
+    lo = 0
+    while lo + 1 < hi:
+        mid = (lo + hi) // 2
+        if checked(mid):
+            hi = mid
+        else:
+            lo = mid
+
+    audit_interval(bracket_hi, hi)
+    if _predicate_has_monotonicity_violation(evaluations):
+        return _deterministic_segmented_first_true(predicate, bracket_hi, label, search_log)
+    return hi
+
+
+def _direct_coarse_to_fine(evaluate_z, z_low, z_high, algorithm_name, search_log):
+    """Run the prescribed 4097-point search and five 1025-point refinements."""
+    if not (math.isfinite(z_low) and math.isfinite(z_high) and z_low < z_high):
+        search_log["warnings"].append(f"empty initial z interval [{z_low}, {z_high}]")
+        return None, None
+
+    best = None
+    left = float(z_low)
+    right = float(z_high)
+    stage_sizes = [DIRECT_COARSE_POINTS] + [DIRECT_REFINEMENT_POINTS] * DIRECT_REFINEMENTS
+    for stage, point_count in enumerate(stage_sizes):
+        grid = np.linspace(left, right, point_count)
+        stage_best = None
+        stage_best_index = None
+        for grid_index, z_value in enumerate(grid):
+            z = float(z_value)
+            n = evaluate_z(z, search_log)
+            if n is None:
+                continue
+            candidate = (int(np.sum(n)), int(n[_target_index()]), z, n.copy())
+            if stage_best is None or candidate[:3] < stage_best[:3]:
+                stage_best = candidate
+                stage_best_index = grid_index
+            if best is None or candidate[:3] < best[:3]:
+                best = candidate
+
+        search_log["z_stages"].append(
+            {
+                "stage": int(stage),
+                "points": int(point_count),
+                "left": left,
+                "right": right,
+                "width": right - left,
+                "feasible": stage_best is not None,
+            }
+        )
+        if stage_best is None:
+            break
+
+        lower_index = max(0, stage_best_index - 1)
+        upper_index = min(point_count - 1, stage_best_index + 1)
+        if lower_index == upper_index:
+            break
+        left = float(grid[lower_index])
+        right = float(grid[upper_index])
+
+    final_width = right - left
+    search_log["final_interval"] = {"left": left, "right": right, "width": final_width}
+    if final_width > DIRECT_WIDTH_WARNING:
+        message = (
+            f"{algorithm_name} final z interval width {final_width:.17g} exceeds "
+            f"{DIRECT_WIDTH_WARNING:.1e}."
+        )
+        search_log["warnings"].append(message)
+        warnings.warn(message, RuntimeWarning)
+    if best is None:
+        return None, None
+    return best[3], best[2]
+
+
 def _ucb_target_min_index(nK, non_target_cost, T, mu_minus_K):
     N0 = _n0()
     target_index = _target_index()
@@ -300,116 +448,79 @@ def _ucb_target_min_index(nK, non_target_cost, T, mu_minus_K):
     if H_online <= 0:
         return -math.inf
 
-    m_min = float(N0[target_index])
-    m_max = float(N0[target_index] + H_online - 1)
-    candidates = {m_min, m_max}
-    if m_max > m_min:
-        for frac in np.linspace(0.0, 1.0, 33):
-            candidates.add(m_min + frac * (m_max - m_min))
+    # Both terms are decreasing in the integer m on the specified interval, so
+    # the exact minimum is attained at its final integer endpoint.
+    m = int(N0[target_index] + H_online - 1)
+    t_m = int(T0 + (m - N0[target_index]) + 1)
+    denom = nK + m
+    return (nK * r_u + m * mu_minus_K) / denom + 3.0 * sigma * math.sqrt(math.log(t_m) / denom)
 
-    values = []
-    for m in candidates:
-        t = T0 + int(round(m - m_min)) + 1
-        denom = nK + m
-        mean_lb = (nK * r_u + m * mu_minus_K) / denom
-        values.append(mean_lb + 3.0 * sigma * math.sqrt(math.log(max(t, 2)) / denom))
-    return min(values)
+
+def _new_direct_search_log(algorithm_name, z_low, z_high):
+    return {
+        "algorithm": algorithm_name,
+        "epsilon_num": DIRECT_EPSILON_NUM,
+        "initial_interval": {"left": float(z_low), "right": float(z_high)},
+        "integer_searches": 0,
+        "nonmonotone_fallbacks": [],
+        "z_stages": [],
+        "warnings": [],
+    }
 
 
 def _ucb_direct_counts_for_T(clean_mean, T_design):
     target_index = _target_index()
     N0 = _n0()
-    mu_minus_K = (
-        max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
-        if target_lower_bound_override is None
-        else float(target_lower_bound_override)
-    )
+    total_N0 = int(np.sum(N0))
+    mu_minus_K = max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
     epsilon = mu_minus_K - r_l
     logT = math.log(T_design)
 
-    def eta_i_direct(i, z):
-        def index_i(x):
-            denom = N0[i] + x
-            mean = clean_mean[i] - x * (clean_mean[i] - r_l) / denom
-            return mean + 3.0 * sigma * math.sqrt(logT / denom)
+    max_target = int(T_design - total_N0 - 1)
+    z_low = float(r_l)
+    z_high = _ucb_target_min_index(max_target, 0, T_design, mu_minus_K) - DIRECT_EPSILON_NUM
+    search_log = _new_direct_search_log("UCB direct", z_low, z_high)
 
-        if index_i(0.0) <= z:
-            return 0.0
-        hi = 1.0
-        while index_i(hi) > z:
-            hi *= 2.0
-            if hi > 1e30:
-                return math.inf
-        lo = 0.0
-        for _ in range(80):
-            mid = 0.5 * (lo + hi)
-            if index_i(mid) <= z:
-                hi = mid
-            else:
-                lo = mid
-        return hi
-
-    def counts_at_z(z):
+    def evaluate_z(z, log):
         n = np.zeros(K, dtype=int)
+        max_non_target = int(T_design - total_N0 - 1)
         for i in range(K):
-            if i != target_index:
-                eta = eta_i_direct(i, z)
-                if not math.isfinite(eta) or eta >= T_design:
-                    return n, math.inf
-                n[i] = int(math.ceil(eta))
+            if i == target_index:
+                continue
+
+            def non_target_ok(n_i):
+                denom = N0[i] + n_i
+                upper = (N0[i] * clean_mean[i] + n_i * r_l) / denom
+                upper += 3.0 * sigma * math.sqrt(logT / denom)
+                return upper <= z
+
+            n_i = _minimal_integer_by_bracketing(
+                non_target_ok, max_non_target, f"UCB non-target arm {i + 1} at z={z:.17g}", log
+            )
+            if n_i is None:
+                return None
+            n[i] = n_i
+
         non_target_cost = int(np.sum(n))
-        if T_design - int(np.sum(N0)) - non_target_cost <= 0:
-            n[target_index] = int(T_design - int(np.sum(N0)) - non_target_cost)
-            return n, math.inf
+        max_nK = int(T_design - total_N0 - non_target_cost - 1)
+        if max_nK < 0:
+            return None
 
-        def ok(nK):
-            return _ucb_target_min_index(nK, non_target_cost, T_design, mu_minus_K) > z + LEGality_tol
+        def target_ok(nK):
+            return _ucb_target_min_index(nK, non_target_cost, T_design, mu_minus_K) >= z + DIRECT_EPSILON_NUM
 
-        if ok(0):
-            n[target_index] = 0
-            return n, int(np.sum(n))
-        hi = 1
-        while not ok(hi):
-            hi *= 2
-            if int(np.sum(N0)) + non_target_cost + hi >= T_design:
-                n[target_index] = int(max(hi, T_design - int(np.sum(N0)) - non_target_cost))
-                return n, math.inf
-        lo = 0
-        while lo + 1 < hi:
-            mid = (lo + hi) // 2
-            if ok(mid):
-                hi = mid
-            else:
-                lo = mid
-        n[target_index] = int(hi)
-        return n, int(np.sum(n))
+        nK = _minimal_integer_by_bracketing(
+            target_ok, max_nK, f"UCB target arm {target_index + 1} at z={z:.17g}", log
+        )
+        if nK is None:
+            return None
+        n[target_index] = nK
+        return n
 
-    z_low = r_l + 1e-10
-    z_high = r_u + 3.0 * sigma * math.sqrt(logT / max(1, int(np.sum(N0))))
-    grid = np.linspace(z_low, z_high, 401)
-    best_n = None
-    best_cost = math.inf
-    best_z = None
-    for z in grid:
-        n, cost = counts_at_z(float(z))
-        if cost < best_cost:
-            best_n = n
-            best_cost = cost
-            best_z = float(z)
-
-    if best_n is None or not math.isfinite(best_cost):
-        n = np.zeros(K, dtype=int)
-        return n, z_low, mu_minus_K, epsilon
-
-    left = max(z_low, best_z - (z_high - z_low) / 400.0)
-    right = min(z_high, best_z + (z_high - z_low) / 400.0)
-    for z in np.linspace(left, right, 101):
-        n, cost = counts_at_z(float(z))
-        if cost < best_cost:
-            best_n = n
-            best_cost = cost
-            best_z = float(z)
-    return best_n, best_z, mu_minus_K, epsilon
+    best_n, best_z = _direct_coarse_to_fine(evaluate_z, z_low, z_high, "UCB direct", search_log)
+    if best_n is None:
+        best_n = np.zeros(K, dtype=int)
+    return best_n, best_z, mu_minus_K, epsilon, search_log
 
 
 def _check_ucb_direct_cutoffs(clean_mean, T, n, z_star, mu_minus_K):
@@ -421,31 +532,32 @@ def _check_ucb_direct_cutoffs(clean_mean, T, n, z_star, mu_minus_K):
         raise RuntimeError("UCB direct allocation is infeasible.")
 
     target_min = _ucb_target_min_index(int(n[target_index]), int(np.sum(n) - n[target_index]), T, mu_minus_K)
-    if target_min <= z_star + LEGality_tol:
+    if target_min < z_star + DIRECT_EPSILON_NUM:
         raise RuntimeError(f"UCB direct target check failed: target_min={target_min}, z_star={z_star}")
 
     for i in range(K):
         if i == target_index:
             continue
         denom = N0[i] + float(n[i])
-        mean = clean_mean[i] - float(n[i]) * (clean_mean[i] - r_l) / denom
+        mean = (N0[i] * clean_mean[i] + float(n[i]) * r_l) / denom
         index_i = mean + 3.0 * sigma * math.sqrt(math.log(T) / denom)
-        if index_i >= z_star + LEGality_tol:
+        if index_i > z_star:
             raise RuntimeError(f"UCB direct non-target check failed: arm={i + 1}, index={index_i}, z_star={z_star}")
 
 
 def UCB_direct_fixed_T(clean_sum, clean_mean, T):
     T = int(T)
-    n, z_star, mu_minus_K, epsilon = _ucb_direct_counts_for_T(clean_mean, T)
+    n, z_star, mu_minus_K, epsilon, search_log = _ucb_direct_counts_for_T(clean_mean, T)
     T0 = int(np.sum(_n0()) + np.sum(n))
     H_online = int(T - T0)
-    if H_online <= 0:
-        return _infeasible_result("UCB direct", T, n, z_star, mu_minus_K, epsilon)
+    if z_star is None or H_online <= 0:
+        reason = "infeasible_no_z_allocation" if z_star is None else "infeasible_H_le_0"
+        return _infeasible_result("UCB direct", T, n, z_star, mu_minus_K, epsilon, search_log, reason)
 
     _check_ucb_direct_cutoffs(clean_mean, T, n, z_star, mu_minus_K)
     if not simulate_online:
         online_counts = _certificate_online_counts(H_online)
-        return _attack_result("UCB direct", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "certificate")
+        return _attack_result("UCB direct", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "certificate", search_log=search_log)
     target_index = _target_index()
     counts = _n0().astype(float) + n.astype(float)
     sums = clean_sum.astype(float) + n.astype(float) * fake_reward_non_target
@@ -462,17 +574,13 @@ def UCB_direct_fixed_T(clean_sum, clean_mean, T):
         sums[arm] += reward
         online_counts[arm] += 1
 
-    return _attack_result("UCB direct", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "passed")
+    return _attack_result("UCB direct", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "passed", search_log=search_log)
 
 
 def _ts_counts_for_T(clean_mean, T_design):
     target_index = _target_index()
     N0 = _n0()
-    mu_minus_K = (
-        max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
-        if target_lower_bound_override is None
-        else float(target_lower_bound_override)
-    )
+    mu_minus_K = max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
     epsilon = mu_minus_K - r_l
     gamma_T = math.sqrt(2.0 * math.log((math.pi ** 2) * K * (T_design ** 2) / (3.0 * delta)))
     z_low = r_l + 1e-9
@@ -570,10 +678,10 @@ def _ts_counts_for_T(clean_mean, T_design):
 
     z_star = 0.5 * (a + c)
     n = np.zeros(K, dtype=int)
-    n[target_index] = int(math.ceil(h_TS(z_star)))
+    n[target_index] = int(math.ceil(h_TS(z_star))) + 1
     for i in range(K):
         if i != target_index:
-            n[i] = int(math.ceil(eta_TS_i(i, z_star))) + 1
+            n[i] = int(math.ceil(eta_TS_i(i, z_star)))
     return n, z_star, mu_minus_K, epsilon
 
 
@@ -597,7 +705,7 @@ def _check_ts_cutoffs(clean_mean, T, n, z_star, mu_minus_K):
         if N0K <= m_star <= T_float:
             candidate_m.append(m_star)
     min_target_lhs = min(target_lower_envelope_for_check(xK, m) for m in candidate_m)
-    if min_target_lhs + LEGality_tol < z_star:
+    if min_target_lhs <= z_star:
         raise RuntimeError(f"TS target cutoff check failed: min_lhs={min_target_lhs}, z_star={z_star}, candidate_m={candidate_m}")
 
     for i in range(K):
@@ -606,7 +714,7 @@ def _check_ts_cutoffs(clean_mean, T, n, z_star, mu_minus_K):
         x = float(n[i])
         denom = N0[i] + x
         g_val = clean_mean[i] - x * (clean_mean[i] - r_l) / denom + gamma_T / math.sqrt(denom)
-        if g_val >= z_star + LEGality_tol:
+        if g_val > z_star:
             raise RuntimeError(f"TS non-target cutoff check failed: arm={i + 1}, g_i_TS(n_i)={g_val}, z_star={z_star}")
 
 
@@ -643,127 +751,105 @@ def TS_fixed_T(clean_sum, clean_mean, T):
 def _ts_target_min_value(nK, non_target_cost, T, mu_minus_K):
     N0 = _n0()
     target_index = _target_index()
+    N0K = int(N0[target_index])
+
+    # Attacked offline-log length.
     T0 = int(np.sum(N0) + non_target_cost + nK)
     H_online = int(T - T0)
     if H_online <= 0:
         return -math.inf
 
-    gamma_T = math.sqrt(2.0 * math.log((math.pi ** 2) * K * (T ** 2) / (3.0 * delta)))
-    m_min = float(N0[target_index])
-    m_max = float(N0[target_index] + H_online - 1)
-    A = r_u - mu_minus_K
-    candidates = {m_min, m_max}
-    if nK > 0 and A > 0.0:
-        y_star = (2.0 * nK * A / gamma_T) ** 2
-        m_star = y_star - nK
-        if m_min <= m_star <= m_max:
-            candidates.add(float(m_star))
-    if m_max > m_min:
-        for frac in np.linspace(0.0, 1.0, 33):
-            candidates.add(m_min + frac * (m_max - m_min))
+    # If the target has been selected in every previous online round, then
+    # before a decision round its genuine target count ranges over this set.
+    m_min = N0K
+    m_max = N0K + H_online - 1
 
-    values = []
-    for m in candidates:
+    def target_value(m):
+        m = float(m)
+        # m=N0K is the first deployment decision at T0+1; m=m_max is t=T.
+        t_m = T0 + (m - N0K) + 1.0
+        gamma_t = math.sqrt(
+            2.0 * math.log((math.pi ** 2) * K * (t_m ** 2) / (3.0 * delta))
+        )
         denom = nK + m
         mean_lb = (nK * r_u + m * mu_minus_K) / denom
-        values.append(mean_lb - gamma_T / math.sqrt(denom))
-    return min(values)
+        return mean_lb - gamma_t / math.sqrt(denom)
+
+    if m_min == m_max:
+        return target_value(m_min)
+
+    # Direct is a numerical benchmark: minimize the trajectory-dependent
+    # target side of Eq. (12), then audit the neighboring integer counts.
+    opt = minimize_scalar(
+        target_value,
+        bounds=(float(m_min), float(m_max)),
+        method="bounded",
+        options={"xatol": 0.25, "maxiter": 100},
+    )
+
+    candidates = {m_min, m_max}
+    if opt.success:
+        center = int(round(opt.x))
+        for m in range(center - 3, center + 4):
+            if m_min <= m <= m_max:
+                candidates.add(m)
+
+    return min(target_value(m) for m in candidates)
 
 
 def _ts_direct_counts_for_T(clean_mean, T_design):
     target_index = _target_index()
     N0 = _n0()
-    mu_minus_K = (
-        max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
-        if target_lower_bound_override is None
-        else float(target_lower_bound_override)
-    )
+    total_N0 = int(np.sum(N0))
+    mu_minus_K = max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
     epsilon = mu_minus_K - r_l
     gamma_T = math.sqrt(2.0 * math.log((math.pi ** 2) * K * (T_design ** 2) / (3.0 * delta)))
 
-    def eta_i_direct(i, z):
-        def upper_i(x):
-            denom = N0[i] + x
-            mean = clean_mean[i] - x * (clean_mean[i] - r_l) / denom
-            return mean + gamma_T / math.sqrt(denom)
+    max_target = int(T_design - total_N0 - 1)
+    z_low = float(r_l)
+    z_high = _ts_target_min_value(max_target, 0, T_design, mu_minus_K) - DIRECT_EPSILON_NUM
+    search_log = _new_direct_search_log("TS direct", z_low, z_high)
 
-        if upper_i(0.0) <= z:
-            return 0.0
-        hi = 1.0
-        while upper_i(hi) > z:
-            hi *= 2.0
-            if hi > 1e30:
-                return math.inf
-        lo = 0.0
-        for _ in range(80):
-            mid = 0.5 * (lo + hi)
-            if upper_i(mid) <= z:
-                hi = mid
-            else:
-                lo = mid
-        return hi
-
-    def counts_at_z(z):
+    def evaluate_z(z, log):
         n = np.zeros(K, dtype=int)
+        max_non_target = int(T_design - total_N0 - 1)
         for i in range(K):
-            if i != target_index:
-                eta = eta_i_direct(i, z)
-                if not math.isfinite(eta) or eta >= T_design:
-                    return n, math.inf
-                n[i] = int(math.ceil(eta))
+            if i == target_index:
+                continue
+
+            def non_target_ok(n_i):
+                denom = N0[i] + n_i
+                upper = (N0[i] * clean_mean[i] + n_i * r_l) / denom
+                upper += gamma_T / math.sqrt(denom)
+                return upper <= z
+
+            n_i = _minimal_integer_by_bracketing(
+                non_target_ok, max_non_target, f"TS non-target arm {i + 1} at z={z:.17g}", log
+            )
+            if n_i is None:
+                return None
+            n[i] = n_i
+
         non_target_cost = int(np.sum(n))
-        if T_design - int(np.sum(N0)) - non_target_cost <= 0:
-            n[target_index] = int(T_design - int(np.sum(N0)) - non_target_cost)
-            return n, math.inf
+        max_nK = int(T_design - total_N0 - non_target_cost - 1)
+        if max_nK < 0:
+            return None
 
-        def ok(nK):
-            return _ts_target_min_value(nK, non_target_cost, T_design, mu_minus_K) > z + LEGality_tol
+        def target_ok(nK):
+            return _ts_target_min_value(nK, non_target_cost, T_design, mu_minus_K) >= z + DIRECT_EPSILON_NUM
 
-        if ok(0):
-            n[target_index] = 0
-            return n, int(np.sum(n))
-        hi = 1
-        while not ok(hi):
-            hi *= 2
-            if int(np.sum(N0)) + non_target_cost + hi >= T_design:
-                n[target_index] = int(max(hi, T_design - int(np.sum(N0)) - non_target_cost))
-                return n, math.inf
-        lo = 0
-        while lo + 1 < hi:
-            mid = (lo + hi) // 2
-            if ok(mid):
-                hi = mid
-            else:
-                lo = mid
-        n[target_index] = int(hi)
-        return n, int(np.sum(n))
+        nK = _minimal_integer_by_bracketing(
+            target_ok, max_nK, f"TS target arm {target_index + 1} at z={z:.17g}", log
+        )
+        if nK is None:
+            return None
+        n[target_index] = nK
+        return n
 
-    z_low = r_l + 1e-10
-    z_high = r_u - 1e-10
-    grid = np.linspace(z_low, z_high, 401)
-    best_n = None
-    best_cost = math.inf
-    best_z = None
-    for z in grid:
-        n, cost = counts_at_z(float(z))
-        if cost < best_cost:
-            best_n = n
-            best_cost = cost
-            best_z = float(z)
-
-    if best_n is None or not math.isfinite(best_cost):
-        n = np.zeros(K, dtype=int)
-        return n, z_low, mu_minus_K, epsilon
-
-    left = max(z_low, best_z - (z_high - z_low) / 400.0)
-    right = min(z_high, best_z + (z_high - z_low) / 400.0)
-    for z in np.linspace(left, right, 101):
-        n, cost = counts_at_z(float(z))
-        if cost < best_cost:
-            best_n = n
-            best_cost = cost
-            best_z = float(z)
-    return best_n, best_z, mu_minus_K, epsilon
+    best_n, best_z = _direct_coarse_to_fine(evaluate_z, z_low, z_high, "TS direct", search_log)
+    if best_n is None:
+        best_n = np.zeros(K, dtype=int)
+    return best_n, best_z, mu_minus_K, epsilon, search_log
 
 
 def _check_ts_direct_cutoffs(clean_mean, T, n, z_star, mu_minus_K):
@@ -771,31 +857,32 @@ def _check_ts_direct_cutoffs(clean_mean, T, n, z_star, mu_minus_K):
     N0 = _n0()
     gamma_T = math.sqrt(2.0 * math.log((math.pi ** 2) * K * (T ** 2) / (3.0 * delta)))
     target_min = _ts_target_min_value(int(n[target_index]), int(np.sum(n) - n[target_index]), T, mu_minus_K)
-    if target_min <= z_star + LEGality_tol:
+    if target_min < z_star + DIRECT_EPSILON_NUM:
         raise RuntimeError(f"TS direct target check failed: target_min={target_min}, z_star={z_star}")
 
     for i in range(K):
         if i == target_index:
             continue
         denom = N0[i] + float(n[i])
-        mean = clean_mean[i] - float(n[i]) * (clean_mean[i] - r_l) / denom
+        mean = (N0[i] * clean_mean[i] + float(n[i]) * r_l) / denom
         upper_i = mean + gamma_T / math.sqrt(denom)
-        if upper_i >= z_star + LEGality_tol:
+        if upper_i > z_star:
             raise RuntimeError(f"TS direct non-target check failed: arm={i + 1}, upper={upper_i}, z_star={z_star}")
 
 
 def TS_direct_fixed_T(clean_sum, clean_mean, T):
     T = int(T)
-    n, z_star, mu_minus_K, epsilon = _ts_direct_counts_for_T(clean_mean, T)
+    n, z_star, mu_minus_K, epsilon, search_log = _ts_direct_counts_for_T(clean_mean, T)
     T0 = int(np.sum(_n0()) + np.sum(n))
     H_online = int(T - T0)
-    if H_online <= 0:
-        return _infeasible_result("TS direct", T, n, z_star, mu_minus_K, epsilon)
+    if z_star is None or H_online <= 0:
+        reason = "infeasible_no_z_allocation" if z_star is None else "infeasible_H_le_0"
+        return _infeasible_result("TS direct", T, n, z_star, mu_minus_K, epsilon, search_log, reason)
 
     _check_ts_direct_cutoffs(clean_mean, T, n, z_star, mu_minus_K)
     if not simulate_online:
         online_counts = _certificate_online_counts(H_online)
-        return _attack_result("TS direct", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "certificate")
+        return _attack_result("TS direct", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "certificate", search_log=search_log)
     target_index = _target_index()
     counts = _n0().astype(float) + n.astype(float)
     sums = clean_sum.astype(float) + n.astype(float) * fake_reward_non_target
@@ -811,7 +898,7 @@ def TS_direct_fixed_T(clean_sum, clean_mean, T):
         sums[arm] += reward
         online_counts[arm] += 1
 
-    return _attack_result("TS direct", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "passed")
+    return _attack_result("TS direct", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "passed", search_log=search_log)
 
 
 def simulate_clean_fixed_T(clean_sum, clean_mean, T, algorithm_name, rng_offset):
