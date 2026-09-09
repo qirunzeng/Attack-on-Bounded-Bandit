@@ -1,2 +1,18 @@
 /ml-1m/
 /ml-25m/
+# Keep downloaded MovieLens datasets and archives local.
+/ml-*/
+/ml-*.zip
+/ml-*.tar.gz
+
+__pycache__/
+*.py[cod]
+*.nbc
+*.nbi
+.DS_Store
+
+# Publish completed experiment results, not local runs or historical artifacts.
+*.log
+*.partial.csv
+/results/**/smoke/
+/results/**/history/

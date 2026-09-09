@@ -1,0 +1,521 @@
+{
+  "results_sha256": "d3828854658f1127e2c3155c89ac2c1082c8d9c7a67b472eff60136d5de9bdcc",
+  "budget_source": "Xu et al. (2021), supplementary A.2/A.4",
+  "validation_source_sha256": "528af76485b94e826775ca0ca7f29670b415f16b92c81a267749a8589728cc9a",
+  "total_rows": 1400,
+  "simulated_rows": 1300,
+  "unchanged_non_xu_records": 1120,
+  "xu_budget_version": "xu2021-original-settings-v1",
+  "cases": [
+    {
+      "learner": "TS",
+      "normalized_gap": 0.0,
+      "mu": 0.0,
+      "C1": null,
+      "C2": null,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 0.1,
+      "mu": 0.005169584593246332,
+      "C1": 2067834,
+      "C2": 30668,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 0.2,
+      "mu": 0.010339169186492664,
+      "C1": 516959,
+      "C2": 22746,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 539705,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.5346835,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 0.3,
+      "mu": 0.015508753779738994,
+      "C1": 229760,
+      "C2": 22869,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 252629,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.7931671,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 0.4,
+      "mu": 0.020678338372985328,
+      "C1": 129240,
+      "C2": 26030,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 155270,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.8836814,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 0.5,
+      "mu": 0.025847922966231656,
+      "C1": 82714,
+      "C2": 31631,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 114345,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.925536,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 0.75,
+      "mu": 0.03877188444934749,
+      "C1": 36762,
+      "C2": 59557,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 96319,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.9669179,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 1.0,
+      "mu": 0.05169584593246331,
+      "C1": 20679,
+      "C2": 125446,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 146125,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.9813834,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 1.5,
+      "mu": 0.07754376889869498,
+      "C1": 9191,
+      "C2": 695903,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 705094,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.9917153,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 2.0,
+      "mu": 0.10339169186492662,
+      "C1": 5170,
+      "C2": 5338033,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 3.0,
+      "mu": 0.15508753779738996,
+      "C1": 2298,
+      "C2": 1713499379,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 4.0,
+      "mu": 0.20678338372985325,
+      "C1": 1293,
+      "C2": 1901480593644652,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 5.0,
+      "mu": 0.25847922966231657,
+      "C1": 828,
+      "C2": null,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "TS",
+      "normalized_gap": 6.0,
+      "mu": 0.3101750755947799,
+      "C1": 575,
+      "C2": null,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 0.0,
+      "mu": 0.0,
+      "C1": null,
+      "C2": null,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 0.1,
+      "mu": 0.005169584593246332,
+      "C1": 5169590,
+      "C2": 26864,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 0.2,
+      "mu": 0.010339169186492664,
+      "C1": 1292400,
+      "C2": 13502,
+      "status": "infeasible",
+      "repeats": 10
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 0.3,
+      "mu": 0.015508753779738994,
+      "C1": 574400,
+      "C2": 9049,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 583449,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.483031,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 0.4,
+      "mu": 0.020678338372985328,
+      "C1": 323100,
+      "C2": 6823,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 329923,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.709201,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 0.5,
+      "mu": 0.025847922966231656,
+      "C1": 206790,
+      "C2": 5487,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 212277,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.81388,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 0.75,
+      "mu": 0.03877188444934749,
+      "C1": 91910,
+      "C2": 3708,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 95618,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.917272,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 1.0,
+      "mu": 0.05169584593246331,
+      "C1": 51700,
+      "C2": 2819,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 54519,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.953461,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 1.5,
+      "mu": 0.07754376889869498,
+      "C1": 22980,
+      "C2": 1932,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 24912,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.979309,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 2.0,
+      "mu": 0.10339169186492662,
+      "C1": 12930,
+      "C2": 1492,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 14422,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.988354,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 3.0,
+      "mu": 0.15508753779738996,
+      "C1": 5750,
+      "C2": 1056,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 6806,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.994816,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 4.0,
+      "mu": 0.20678338372985325,
+      "C1": 3240,
+      "C2": 845,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 4085,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.997075,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 5.0,
+      "mu": 0.25847922966231657,
+      "C1": 2070,
+      "C2": 722,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 2792,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.998128,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    },
+    {
+      "learner": "UCB",
+      "normalized_gap": 6.0,
+      "mu": 0.3101750755947799,
+      "C1": 1440,
+      "C2": 648,
+      "status": "simulated",
+      "repeats": 10,
+      "cost": 2088,
+      "observed_failures": {
+        "post_attack": 0
+      },
+      "target_ratio_mean": 0.998695,
+      "post_attack_target_ratio_min": 1.0,
+      "post_attack_target_ratio_mean": 1.0
+    }
+  ],
+  "original_table1_check": {
+    "K": 2,
+    "T": 50000,
+    "means": [
+      0.9,
+      0.8
+    ],
+    "C1": 34,
+    "C2": 66,
+    "runs": [
+      {
+        "learner": "UCB",
+        "seed": 0,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "UCB",
+        "seed": 1,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "UCB",
+        "seed": 2,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "UCB",
+        "seed": 3,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "UCB",
+        "seed": 4,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "UCB",
+        "seed": 5,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "UCB",
+        "seed": 6,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "UCB",
+        "seed": 7,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "UCB",
+        "seed": 8,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "UCB",
+        "seed": 9,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 0,
+        "target_ratio": 0.99958,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 1,
+        "target_ratio": 0.99962,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 2,
+        "target_ratio": 0.99964,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 3,
+        "target_ratio": 0.99966,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 4,
+        "target_ratio": 0.99962,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 5,
+        "target_ratio": 0.99958,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 6,
+        "target_ratio": 0.99966,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 7,
+        "target_ratio": 0.99968,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 8,
+        "target_ratio": 0.99968,
+        "post_attack_target_ratio": 1.0
+      },
+      {
+        "learner": "TS",
+        "seed": 9,
+        "target_ratio": 0.99962,
+        "post_attack_target_ratio": 1.0
+      }
+    ]
+  }
+}

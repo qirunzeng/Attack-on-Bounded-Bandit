@@ -1,0 +1,2 @@
+# Preserve result bytes so manifest SHA-256 checks survive checkout.
+*.csv -text whitespace=cr-at-eol

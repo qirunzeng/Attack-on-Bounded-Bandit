@@ -2,7 +2,7 @@ import math
 import warnings
 
 import numpy as np
-from scipy.optimize import minimize_scalar
+
 
 K = 10
 target_arm = K
@@ -63,6 +63,23 @@ def _s_t(T):
 
 def _beta(N):
     return math.sqrt((2.0 * sigma * sigma / N) * math.log((math.pi ** 2) * K * (N ** 2) / (3.0 * delta)))
+
+
+def _target_mean_lower_bound(clean_mean, known_target_mean=None):
+    """Use a supplied mean only for a known deterministic target environment.
+
+    The caller must establish that every genuine target reward equals this
+    value. Random-reward experiments must leave known_target_mean unset.
+    """
+    target_index = _target_index()
+    if known_target_mean is None:
+        return max(r_l, clean_mean[target_index] - 2.0 * _beta(_n0()[target_index]))
+    value = float(known_target_mean)
+    if not math.isfinite(value) or not r_l <= value <= r_u:
+        raise ValueError("Known target mean must lie in the reward range")
+    if not math.isclose(value, float(clean_mean[target_index]), abs_tol=1e-12):
+        raise ValueError("Deterministic target mean disagrees with the clean log")
+    return value
 
 
 def _allocation_dict(n):
@@ -162,15 +179,14 @@ def _infeasible_result(algorithm_name, T, n, z_star, mu_minus_K, epsilon, search
 
 
 def _certificate_online_counts(H_online):
-    online_counts = np.zeros(K, dtype=int)
-    online_counts[_target_index()] = int(H_online)
-    return online_counts
+    """A certificate is not an observed trajectory: leave empirical counts missing."""
+    return None
 
 
-def _ucb_counts_for_T(clean_mean, T_design):
+def _ucb_counts_for_T(clean_mean, T_design, known_target_mean=None):
     target_index = _target_index()
     N0 = _n0()
-    mu_minus_K = max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
+    mu_minus_K = _target_mean_lower_bound(clean_mean, known_target_mean)
     epsilon = mu_minus_K - r_l
     logT = math.log(T_design)
     b = 3.0 * sigma * math.sqrt(logT / T_design)
@@ -468,11 +484,11 @@ def _new_direct_search_log(algorithm_name, z_low, z_high):
     }
 
 
-def _ucb_direct_counts_for_T(clean_mean, T_design):
+def _ucb_direct_counts_for_T(clean_mean, T_design, known_target_mean=None):
     target_index = _target_index()
     N0 = _n0()
     total_N0 = int(np.sum(N0))
-    mu_minus_K = max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
+    mu_minus_K = _target_mean_lower_bound(clean_mean, known_target_mean)
     epsilon = mu_minus_K - r_l
     logT = math.log(T_design)
 
@@ -577,10 +593,10 @@ def UCB_direct_fixed_T(clean_sum, clean_mean, T):
     return _attack_result("UCB direct", T, T0, H_online, n, online_counts, z_star, mu_minus_K, epsilon, "passed", search_log=search_log)
 
 
-def _ts_counts_for_T(clean_mean, T_design):
+def _ts_counts_for_T(clean_mean, T_design, known_target_mean=None):
     target_index = _target_index()
     N0 = _n0()
-    mu_minus_K = max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
+    mu_minus_K = _target_mean_lower_bound(clean_mean, known_target_mean)
     epsilon = mu_minus_K - r_l
     gamma_T = math.sqrt(2.0 * math.log((math.pi ** 2) * K * (T_design ** 2) / (3.0 * delta)))
     z_low = r_l + 1e-9
@@ -749,6 +765,7 @@ def TS_fixed_T(clean_sum, clean_mean, T):
 
 
 def _ts_target_min_value(nK, non_target_cost, T, mu_minus_K):
+    from scipy.optimize import minimize_scalar
     N0 = _n0()
     target_index = _target_index()
     N0K = int(N0[target_index])
@@ -797,11 +814,11 @@ def _ts_target_min_value(nK, non_target_cost, T, mu_minus_K):
     return min(target_value(m) for m in candidates)
 
 
-def _ts_direct_counts_for_T(clean_mean, T_design):
+def _ts_direct_counts_for_T(clean_mean, T_design, known_target_mean=None):
     target_index = _target_index()
     N0 = _n0()
     total_N0 = int(np.sum(N0))
-    mu_minus_K = max(r_l, clean_mean[target_index] - 2.0 * _beta(N0[target_index]))
+    mu_minus_K = _target_mean_lower_bound(clean_mean, known_target_mean)
     epsilon = mu_minus_K - r_l
     gamma_T = math.sqrt(2.0 * math.log((math.pi ** 2) * K * (T_design ** 2) / (3.0 * delta)))
 
