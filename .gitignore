@@ -16,3 +16,6 @@ __pycache__/
 *.partial.csv
 /results/
 /fig/
+
+# Local review notes.
+/EXPERIMENT_AUDIT.md

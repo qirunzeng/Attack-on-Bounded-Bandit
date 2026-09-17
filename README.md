@@ -80,4 +80,3 @@ Manifests record seeds, configuration, and source/data hashes.
 `mlrunner.py` supplies data loading and clean logs. `bandit.py` and `simulation.py`
 implement UCB/TS; the `epsilon_greedy_*` modules implement EG. `direct_search.py`,
 `xu_budget.py`, and `xu_simulation.py` remain dependencies of the experiment pipeline.
-Historical methodological notes are in `EXPERIMENT_AUDIT.md`.
