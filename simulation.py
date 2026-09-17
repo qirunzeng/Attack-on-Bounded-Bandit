@@ -11,7 +11,7 @@ from numba import njit
 
 @njit(cache=True)
 def trajectory(counts, sums, rewards, offsets, T, learner, attack, rng,
-               sigma=0.5, delta=0.05, margin=0.01, phase=0, phase_two=-1,
+               sigma=0.5, phase=0, phase_two=-1,
                target_mean=-1.0):
     # learner: 0 UCB, 1 Gaussian TS; attack: 0 none, 1 clipped, 2 two-phase.
     # -1 retains the empirical reward source and its original random stream.
@@ -33,7 +33,6 @@ def trajectory(counts, sums, rewards, offsets, T, learner, attack, rng,
         arm = 0
         if counts[K - 1] == 0:
             # Online initialization: target first, then other arms in order.
-            # Its feedback supplies the target statistic needed by clipping.
             arm = K - 1
         else:
             unobserved = -1
@@ -58,17 +57,7 @@ def trajectory(counts, sums, rewards, offsets, T, learner, attack, rng,
             reward0 = rewards[rng.integers(offsets[arm], offsets[arm + 1])]
         reward = reward0
         if attack == 1 and arm != K - 1:
-            if learner == 1:
-                # On [0,1], 4 exp(N_i) already makes Zuo's threshold
-                # negative. Clipping its requested reward therefore gives 0
-                # exactly; avoid overflowing an irrelevant exponential.
-                reward = 0.0
-            else:
-                nk = counts[K - 1]
-                beta = math.sqrt(2 * sigma**2 / nk * math.log(math.pi**2 * K * nk**2 / (3 * delta)))
-                threshold = sums[K - 1] / nk - 2 * beta - margin
-                requested = max(0.0, sums[arm] + reward0 - threshold * (counts[arm] + 1))
-                reward = max(0.0, reward0 - requested)
+            reward = 0.0
         elif attack == 2:
             if step < phase:
                 reward = 0.0

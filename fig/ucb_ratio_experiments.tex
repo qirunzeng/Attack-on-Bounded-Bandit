@@ -5,7 +5,7 @@
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.97\linewidth, height=3.7cm,
+    width=0.97\linewidth, height=4.1cm,
     xlabel={Horizon $T$}, ylabel={Target-arm Ratio},
     label style={font=\small}, tick label style={font=\scriptsize},
     tick align=outside, tick pos=left, axis on top,
@@ -13,30 +13,30 @@
     xmode=normal, ymode=normal,ymin=0, ymax=1.06, ytick={0,0.25,0.5,0.75,1},xmin=100000, xmax=1000000, xtick={100000,400000,700000,1000000}, scaled x ticks=base 10:-6,
 ]
 
-\addplot[name path=UCBhorizontotaltarget_ratioup, draw=none, forget plot] coordinates {(100000,0.895745976903) (250000,0.925182872382) (400000,0.936646132659) (550000,0.943319703518) (700000,0.947872153404) (850000,0.951250336565) (1000000,0.953899132514)};
-\addplot[name path=UCBhorizontotaltarget_ratiolo, draw=none, forget plot] coordinates {(100000,0.895212023097) (250000,0.924909927618) (400000,0.936446867341) (550000,0.943163205573) (700000,0.94774013231) (850000,0.95113625167) (1000000,0.953796067486)};
+\addplot[name path=UCBhorizontotaltarget_ratioup, draw=none, forget plot] coordinates {(100000,0.895745388008) (250000,0.925182419096) (400000,0.936642240208) (550000,0.94331893884) (700000,0.94787020672) (850000,0.951249090222) (1000000,0.953897266116)};
+\addplot[name path=UCBhorizontotaltarget_ratiolo, draw=none, forget plot] coordinates {(100000,0.895197411992) (250000,0.924895020904) (400000,0.936438159792) (550000,0.943155606614) (700000,0.947733678994) (850000,0.951130486248) (1000000,0.953791053884)};
 \addplot[exptotal, fill opacity=0.12, draw=none, forget plot] fill between[of=UCBhorizontotaltarget_ratioup and UCBhorizontotaltarget_ratiolo];
-\addplot[color=exptotal, thick, solid, mark=o, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(100000,0.895479) (250000,0.9250464) (400000,0.9365465) (550000,0.943241454545) (700000,0.947806142857) (850000,0.951193294118) (1000000,0.9538476)};
+\addplot[color=exptotal, thick, solid, mark=o, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(100000,0.8954714) (250000,0.92503872) (400000,0.9365402) (550000,0.943237272727) (700000,0.947801942857) (850000,0.951189788235) (1000000,0.95384416)};
 
 \addplot[name path=UCBhorizononlineonline_ratioup, draw=none, forget plot] coordinates {(100000,1) (250000,1) (400000,1) (550000,1) (700000,1) (850000,1) (1000000,1)};
 \addplot[name path=UCBhorizononlineonline_ratiolo, draw=none, forget plot] coordinates {(100000,1) (250000,1) (400000,1) (550000,1) (700000,1) (850000,1) (1000000,1)};
 \addplot[exponline, fill opacity=0.12, draw=none, forget plot] fill between[of=UCBhorizononlineonline_ratioup and UCBhorizononlineonline_ratiolo];
 \addplot[color=exponline, thick, solid, mark=triangle, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(100000,1) (250000,1) (400000,1) (550000,1) (700000,1) (850000,1) (1000000,1)};
 
-\addplot[name path=UCBhorizonheuristictarget_ratioup, draw=none, forget plot] coordinates {(100000,0.194358868379) (250000,0.266036345537) (400000,0.335302306186) (550000,0.388467260511) (700000,0.445809932395) (850000,0.491990471404) (1000000,0.528946749904)};
-\addplot[name path=UCBhorizonheuristictarget_ratiolo, draw=none, forget plot] coordinates {(100000,0.180885131621) (250000,0.257252454463) (400000,0.321796693814) (550000,0.376656739489) (700000,0.438117496177) (850000,0.478899646243) (1000000,0.517999050096)};
+\addplot[name path=UCBhorizonheuristictarget_ratioup, draw=none, forget plot] coordinates {(100000,0.19280276004) (250000,0.273113418542) (400000,0.33984620384) (550000,0.39751960987) (700000,0.444916270417) (850000,0.489790303397) (1000000,0.527777775286)};
+\addplot[name path=UCBhorizonheuristictarget_ratiolo, draw=none, forget plot] coordinates {(100000,0.18051563996) (250000,0.256871221458) (400000,0.32279929616) (550000,0.379583299221) (700000,0.43305287244) (850000,0.476201037779) (1000000,0.517591104714)};
 \addplot[expheuristic, fill opacity=0.12, draw=none, forget plot] fill between[of=UCBhorizonheuristictarget_ratioup and UCBhorizonheuristictarget_ratiolo];
-\addplot[color=expheuristic, thick, solid, mark=square, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(100000,0.187622) (250000,0.2616444) (400000,0.3285495) (550000,0.382562) (700000,0.441963714286) (850000,0.485445058824) (1000000,0.5234729)};
+\addplot[color=expheuristic, thick, solid, mark=square, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(100000,0.1866592) (250000,0.26499232) (400000,0.33132275) (550000,0.388551454545) (700000,0.438984571429) (850000,0.482995670588) (1000000,0.52268444)};
 
 \end{axis}
 \end{tikzpicture}
-\par\vspace{2pt}{\small (a) $K=10$}
+\par\vspace{2pt}{\small (a) Target-arm Selection Ratio\\vs. Horizon $T$}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.49\linewidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.97\linewidth, height=3.7cm,
+    width=0.97\linewidth, height=4.1cm,
     xlabel={Number of Arms $K$}, ylabel={Target-arm Ratio},
     label style={font=\small}, tick label style={font=\scriptsize},
     tick align=outside, tick pos=left, axis on top,
@@ -44,24 +44,24 @@
     xmode=normal, ymode=normal,ymin=0, ymax=1.06, ytick={0,0.25,0.5,0.75,1},xmin=5, xmax=50, xtick={5,10,20,30,40,50},
 ]
 
-\addplot[name path=UCBarmstotaltarget_ratioup, draw=none, forget plot] coordinates {(5,0.965743658387) (10,0.953899132514) (15,0.945580325715) (20,0.93883859584) (30,0.927984114347) (40,0.919149960381) (50,0.911433867309)};
-\addplot[name path=UCBarmstotaltarget_ratiolo, draw=none, forget plot] coordinates {(5,0.965693341613) (10,0.953796067486) (15,0.945470074285) (20,0.93875420416) (30,0.927835485653) (40,0.919032239619) (50,0.911267732691)};
+\addplot[name path=UCBarmstotaltarget_ratioup, draw=none, forget plot] coordinates {(5,0.965773879095) (10,0.953897266116) (15,0.945564097282) (20,0.938826799144) (30,0.927987522111) (40,0.919143516216) (50,0.911437247472)};
+\addplot[name path=UCBarmstotaltarget_ratiolo, draw=none, forget plot] coordinates {(5,0.965692400905) (10,0.953791053884) (15,0.945457102718) (20,0.938717840856) (30,0.927847517889) (40,0.919003923784) (50,0.911281232528)};
 \addplot[exptotal, fill opacity=0.12, draw=none, forget plot] fill between[of=UCBarmstotaltarget_ratioup and UCBarmstotaltarget_ratiolo];
-\addplot[color=exptotal, thick, solid, mark=o, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(5,0.9657185) (10,0.9538476) (15,0.9455252) (20,0.9387964) (30,0.9279098) (40,0.9190911) (50,0.9113508)};
+\addplot[color=exptotal, thick, solid, mark=o, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(5,0.96573314) (10,0.95384416) (15,0.9455106) (20,0.93877232) (30,0.92791752) (40,0.91907372) (50,0.91135924)};
 
 \addplot[name path=UCBarmsonlineonline_ratioup, draw=none, forget plot] coordinates {(5,1) (10,1) (15,1) (20,1) (30,1) (40,1) (50,1)};
 \addplot[name path=UCBarmsonlineonline_ratiolo, draw=none, forget plot] coordinates {(5,1) (10,1) (15,1) (20,1) (30,1) (40,1) (50,1)};
 \addplot[exponline, fill opacity=0.12, draw=none, forget plot] fill between[of=UCBarmsonlineonline_ratioup and UCBarmsonlineonline_ratiolo];
 \addplot[color=exponline, thick, solid, mark=triangle, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(5,1) (10,1) (15,1) (20,1) (30,1) (40,1) (50,1)};
 
-\addplot[name path=UCBarmsheuristictarget_ratioup, draw=none, forget plot] coordinates {(5,0.763634041177) (10,0.528946749904) (15,0.355570104601) (20,0.24325310107) (30,0.131174652807) (40,0.0797168115464) (50,0.0588198298153)};
-\addplot[name path=UCBarmsheuristictarget_ratiolo, draw=none, forget plot] coordinates {(5,0.759786758823) (10,0.517999050096) (15,0.345187695399) (20,0.23015209893) (30,0.121384147193) (40,0.0735907884536) (50,0.0543573701847)};
+\addplot[name path=UCBarmsheuristictarget_ratioup, draw=none, forget plot] coordinates {(5,0.763877206532) (10,0.527777775286) (15,0.356401693878) (20,0.244674543724) (30,0.131576890227) (40,0.0818114856146) (50,0.0584712171347)};
+\addplot[name path=UCBarmsheuristictarget_ratiolo, draw=none, forget plot] coordinates {(5,0.758506833468) (10,0.517591104714) (15,0.343916106122) (20,0.232694336276) (30,0.122830989773) (40,0.0753247943854) (50,0.0530007428653)};
 \addplot[expheuristic, fill opacity=0.12, draw=none, forget plot] fill between[of=UCBarmsheuristictarget_ratioup and UCBarmsheuristictarget_ratiolo];
-\addplot[color=expheuristic, thick, solid, mark=square, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(5,0.7617104) (10,0.5234729) (15,0.3503789) (20,0.2367026) (30,0.1262794) (40,0.0766538) (50,0.0565886)};
+\addplot[color=expheuristic, thick, solid, mark=square, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(5,0.76119202) (10,0.52268444) (15,0.3501589) (20,0.23868444) (30,0.12720394) (40,0.07856814) (50,0.05573598)};
 
 \end{axis}
 \end{tikzpicture}
-\par\vspace{2pt}{\small (b) $T=1{,}000{,}000$}
+\par\vspace{2pt}{\small (b) Target-arm Selection Ratio\\vs. Number of Arms $K$}
 \end{minipage}
 
 \par\vspace{2pt}
@@ -69,6 +69,6 @@
 \tikz[baseline=-0.6ex]{\draw[exptotal, thick, solid] (0,0)--(.48,0); \draw plot[mark=o, mark size=2.4pt, mark options={solid, fill=none, draw=exptotal}] coordinates {(.24,0)};}\;$N_K/T$ & \tikz[baseline=-0.6ex]{\draw[exponline, thick, solid] (0,0)--(.48,0); \draw plot[mark=triangle, mark size=2.4pt, mark options={solid, fill=none, draw=exponline}] coordinates {(.24,0)};}\;$N_K^{\on}/H$ & \tikz[baseline=-0.6ex]{\draw[expheuristic, thick, solid] (0,0)--(.48,0); \draw plot[mark=square, mark size=2.4pt, mark options={solid, fill=none, draw=expheuristic}] coordinates {(.24,0)};}\;Clipped Suppression $N_K/T$
 \end{tabular}}
 
-\caption{UCB target-arm ratios.}
+\caption{Target-arm Selection Ratio for UCB.}
 \label{fig:ucb_ratio_experiments}
 \end{figure}

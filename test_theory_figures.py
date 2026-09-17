@@ -12,6 +12,7 @@ import generate_theory_figures as figures
 
 
 def fixture(version=figures.VERSION):
+    repeats = 10 if version == figures.LEGACY_VERSION else 50
     if version == figures.LEGACY_VERSION:
         configs = [(r, T, 10 if r == 'fixed' else round(10 * (T / 100000)**.25))
                    for r in ['fixed', 'growing'] for T in figures.T_GRID]
@@ -19,7 +20,7 @@ def fixture(version=figures.VERSION):
         configs = [('fixed', T, K) for K in figures.K_GRID for T in figures.T_GRID]
     base = 11 / 669
     manifest = dict(
-        version=version, dataset='MovieLens-25M', repeats=10, smoke=False,
+        version=version, dataset='MovieLens-25M', repeats=repeats, smoke=False,
         T_grid=figures.T_GRID,
         configurations=[dict(regime=r, T=T, K=K) for r, T, K in configs],
         sigma=.5, delta=.05, N0_i=5,
@@ -36,7 +37,7 @@ def fixture(version=figures.VERSION):
     rows = []
     for regime, T, K in configs:
         for learner in figures.LEARNERS:
-            for repeat in range(10):
+            for repeat in range(repeats):
                 n = [100 + repeat + K] * (K - 1) + [200 * (K - 1)]
                 cost = sum(n)
                 H = T - cost - 5 * K
@@ -84,7 +85,7 @@ class TheoryFigureTests(unittest.TestCase):
     def test_complete_grid_and_both_figures(self):
         self.write()
         rows, _ = figures.read_results(self.path)
-        self.assertEqual(len(rows), 500)
+        self.assertEqual(len(rows), 2500)
         outputs = figures.generate(rows)
         self.assertEqual(set(outputs), {'ucb_theory_alignment.tex', 'ts_theory_alignment.tex'})
         for learner in ['ucb', 'ts']:
@@ -133,18 +134,29 @@ class TheoryFigureTests(unittest.TestCase):
     def test_legacy_data_are_still_validated(self):
         self.manifest, self.rows = fixture(figures.LEGACY_VERSION)
         self.write()
-        rows, manifest = figures.read_results(self.path)
+        with self.assertRaisesRegex(ValueError, 'legacy reading is explicit'):
+            figures.read_results(self.path)
+        rows, manifest = figures.read_results(self.path, allow_legacy=True)
         self.assertEqual(len(rows), 200)
         self.assertEqual(manifest['version'], figures.LEGACY_VERSION)
         self.manifest['growing_K_rule'] = 'arbitrary'
         self.write()
         with self.assertRaisesRegex(ValueError, 'legacy regime'):
-            figures.read_results(self.path)
+            figures.read_results(self.path, allow_legacy=True)
+
+    def test_current_production_grid_requires_fifty_repeats(self):
+        self.manifest['repeats'] = 10
+        self.rows = [row for row in self.rows if row['repeat'] < 10]
+        self.write()
+        for allow_legacy in [False, True]:
+            with self.subTest(allow_legacy=allow_legacy), self.assertRaisesRegex(ValueError, 'fifty-repeat'):
+                figures.read_results(self.path, allow_legacy=allow_legacy)
 
     def test_allocation_panel_preserves_fixed_k10_only(self):
         _, legacy = fixture(figures.LEGACY_VERSION)
         for learner in figures.LEARNERS:
-            self.assertEqual(figures.panel(self.rows, learner, 'allocation_fractions'),
+            first_ten = [row for row in self.rows if row['repeat'] < 10]
+            self.assertEqual(figures.panel(first_ten, learner, 'allocation_fractions'),
                              figures.panel(legacy, learner, 'allocation_fractions'))
             fixed = [row for row in self.rows if row['K'] == 10]
             expected = figures.points(fixed, learner, 'fixed', 'target_budget_fraction')
@@ -194,7 +206,7 @@ class TheoryFigureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'default target floor'):
             figures.read_results(self.path)
         self.rows[0]['mu_minus_K'] = 0
-        self.rows[10]['Lambda_T'] = self.rows[0]['Lambda_T']
+        self.rows[50]['Lambda_T'] = self.rows[0]['Lambda_T']
         self.write()
         with self.assertRaisesRegex(ValueError, 'theoretical cost scale'):
             figures.read_results(self.path)
@@ -222,7 +234,7 @@ class TheoryFigureTests(unittest.TestCase):
         self.rows[100]['trajectory_seconds'] = .2
         self.write()
         with self.assertRaisesRegex(ValueError, 'reuse the same trajectory'):
-            figures.read_results(self.path)
+            figures.read_results(self.path, allow_legacy=True)
 
     def test_sample_standard_deviation(self):
         rows = [dict(learner='UCB', regime='fixed', T=100000, value=v) for v in [1., 3.]]

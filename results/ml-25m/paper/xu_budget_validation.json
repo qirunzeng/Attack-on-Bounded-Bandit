@@ -1,9 +1,9 @@
 {
-  "results_sha256": "d3828854658f1127e2c3155c89ac2c1082c8d9c7a67b472eff60136d5de9bdcc",
+  "results_sha256": "496ae6f4e6258d7ecebbc9c5fe1cd637f9edfdc5cc0b07c6d248f9e413a36c17",
   "budget_source": "Xu et al. (2021), supplementary A.2/A.4",
-  "validation_source_sha256": "528af76485b94e826775ca0ca7f29670b415f16b92c81a267749a8589728cc9a",
-  "total_rows": 1400,
-  "simulated_rows": 1300,
+  "validation_source_sha256": "a705b2b149d3865ba0dd5a0fdac5c8617fb36603d2775b966a8cfa9a591560cc",
+  "total_rows": 7000,
+  "simulated_rows": 6500,
   "unchanged_non_xu_records": 1120,
   "xu_budget_version": "xu2021-original-settings-v1",
   "cases": [
@@ -14,7 +14,7 @@
       "C1": null,
       "C2": null,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "TS",
@@ -23,7 +23,7 @@
       "C1": 2067834,
       "C2": 30668,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "TS",
@@ -32,12 +32,12 @@
       "C1": 516959,
       "C2": 22746,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 539705,
       "observed_failures": {
         "post_attack": 0
       },
-      "target_ratio_mean": 0.5346835,
+      "target_ratio_mean": 0.5347056,
       "post_attack_target_ratio_min": 1.0,
       "post_attack_target_ratio_mean": 1.0
     },
@@ -48,12 +48,12 @@
       "C1": 229760,
       "C2": 22869,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 252629,
       "observed_failures": {
         "post_attack": 0
       },
-      "target_ratio_mean": 0.7931671,
+      "target_ratio_mean": 0.79319348,
       "post_attack_target_ratio_min": 1.0,
       "post_attack_target_ratio_mean": 1.0
     },
@@ -64,12 +64,12 @@
       "C1": 129240,
       "C2": 26030,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 155270,
       "observed_failures": {
         "post_attack": 0
       },
-      "target_ratio_mean": 0.8836814,
+      "target_ratio_mean": 0.8836803,
       "post_attack_target_ratio_min": 1.0,
       "post_attack_target_ratio_mean": 1.0
     },
@@ -80,12 +80,12 @@
       "C1": 82714,
       "C2": 31631,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 114345,
       "observed_failures": {
         "post_attack": 0
       },
-      "target_ratio_mean": 0.925536,
+      "target_ratio_mean": 0.9255443799999999,
       "post_attack_target_ratio_min": 1.0,
       "post_attack_target_ratio_mean": 1.0
     },
@@ -96,12 +96,12 @@
       "C1": 36762,
       "C2": 59557,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 96319,
       "observed_failures": {
         "post_attack": 0
       },
-      "target_ratio_mean": 0.9669179,
+      "target_ratio_mean": 0.96690564,
       "post_attack_target_ratio_min": 1.0,
       "post_attack_target_ratio_mean": 1.0
     },
@@ -112,12 +112,12 @@
       "C1": 20679,
       "C2": 125446,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 146125,
       "observed_failures": {
         "post_attack": 0
       },
-      "target_ratio_mean": 0.9813834,
+      "target_ratio_mean": 0.9813736,
       "post_attack_target_ratio_min": 1.0,
       "post_attack_target_ratio_mean": 1.0
     },
@@ -128,12 +128,12 @@
       "C1": 9191,
       "C2": 695903,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 705094,
       "observed_failures": {
         "post_attack": 0
       },
-      "target_ratio_mean": 0.9917153,
+      "target_ratio_mean": 0.99171518,
       "post_attack_target_ratio_min": 1.0,
       "post_attack_target_ratio_mean": 1.0
     },
@@ -144,7 +144,7 @@
       "C1": 5170,
       "C2": 5338033,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "TS",
@@ -153,7 +153,7 @@
       "C1": 2298,
       "C2": 1713499379,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "TS",
@@ -162,7 +162,7 @@
       "C1": 1293,
       "C2": 1901480593644652,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "TS",
@@ -171,7 +171,7 @@
       "C1": 828,
       "C2": null,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "TS",
@@ -180,7 +180,7 @@
       "C1": 575,
       "C2": null,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "UCB",
@@ -189,7 +189,7 @@
       "C1": null,
       "C2": null,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "UCB",
@@ -198,7 +198,7 @@
       "C1": 5169590,
       "C2": 26864,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "UCB",
@@ -207,7 +207,7 @@
       "C1": 1292400,
       "C2": 13502,
       "status": "infeasible",
-      "repeats": 10
+      "repeats": 50
     },
     {
       "learner": "UCB",
@@ -216,7 +216,7 @@
       "C1": 574400,
       "C2": 9049,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 583449,
       "observed_failures": {
         "post_attack": 0
@@ -232,7 +232,7 @@
       "C1": 323100,
       "C2": 6823,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 329923,
       "observed_failures": {
         "post_attack": 0
@@ -248,7 +248,7 @@
       "C1": 206790,
       "C2": 5487,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 212277,
       "observed_failures": {
         "post_attack": 0
@@ -264,7 +264,7 @@
       "C1": 91910,
       "C2": 3708,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 95618,
       "observed_failures": {
         "post_attack": 0
@@ -280,7 +280,7 @@
       "C1": 51700,
       "C2": 2819,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 54519,
       "observed_failures": {
         "post_attack": 0
@@ -296,7 +296,7 @@
       "C1": 22980,
       "C2": 1932,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 24912,
       "observed_failures": {
         "post_attack": 0
@@ -312,7 +312,7 @@
       "C1": 12930,
       "C2": 1492,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 14422,
       "observed_failures": {
         "post_attack": 0
@@ -328,7 +328,7 @@
       "C1": 5750,
       "C2": 1056,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 6806,
       "observed_failures": {
         "post_attack": 0
@@ -344,7 +344,7 @@
       "C1": 3240,
       "C2": 845,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 4085,
       "observed_failures": {
         "post_attack": 0
@@ -360,7 +360,7 @@
       "C1": 2070,
       "C2": 722,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 2792,
       "observed_failures": {
         "post_attack": 0
@@ -376,7 +376,7 @@
       "C1": 1440,
       "C2": 648,
       "status": "simulated",
-      "repeats": 10,
+      "repeats": 50,
       "cost": 2088,
       "observed_failures": {
         "post_attack": 0

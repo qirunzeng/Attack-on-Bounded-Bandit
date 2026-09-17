@@ -11,7 +11,7 @@ import numpy as np
 
 import bandit
 import generate_paper_figures
-from simulation import simulate
+from simulation import simulate, trajectory
 
 
 class ExperimentTests(unittest.TestCase):
@@ -55,13 +55,7 @@ class ExperimentTests(unittest.TestCase):
                         raw = arrays[arm][rng.integers(0, len(arrays[arm]))]
                         reward = raw
                         if attack == 1 and arm == 0:
-                            if learner == 'TS':
-                                reward = 0.
-                            else:
-                                nk = counts[-1]
-                                beta = math.sqrt(.5/nk*math.log(math.pi**2*2*nk**2/.15))
-                                threshold = sums[-1]/nk - 2*beta - .01
-                                reward = max(0., raw-max(0., sums[arm]+raw-threshold*(counts[arm]+1)))
+                            reward = 0.
                         elif attack == 2 and t <= 8:
                             reward = float(t > 3 and arm == 1)
                         if attack == 2:
@@ -170,12 +164,60 @@ class ExperimentTests(unittest.TestCase):
                     w = csv.DictWriter(f, fieldnames=row)
                     w.writeheader()
                     w.writerow(row)
-                manifest = dict(dataset='MovieLens-25M', smoke=False, repeats=10, rows=1,
+                manifest = dict(dataset='MovieLens-25M', smoke=False, repeats=50, rows=1,
                                 results_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
                 (out/'manifest.json').write_text(json.dumps(manifest))
                 with patch.object(generate_paper_figures, 'DATA', out):
                     with self.assertRaisesRegex(ValueError, expected_error):
                         generate_paper_figures.read_results()
+
+    def test_plotter_rejects_old_suppression_feedback_rule(self):
+        # A complete synthetic fixture exercises the provenance gate after all
+        # existing grid, repeat, and accounting checks, without experiment data.
+        rows = []
+        for learner in ['UCB', 'TS']:
+            for method in ['Ours', 'Clipped Suppression']:
+                offline = method == 'Ours'
+                counts = [0]*9 + [850] if offline else [1]*9 + [991]
+                for repeat in range(50):
+                    rows.append(dict(dataset='MovieLens-25M', sweep='horizon',
+                        learner=learner, method=method, T=1000, K=10,
+                        H=850 if offline else 1000, T0=150 if offline else 0,
+                        multiplier='', repeat=repeat, status='simulated',
+                        clean_sum_json=json.dumps([0]*10),
+                        allocation_json=json.dumps([10]*10 if offline else [0]*10),
+                        online_counts_json=json.dumps(counts),
+                        cost=100 if offline else 9,
+                        online_ratio=1. if offline else .991,
+                        target_ratio=.865 if offline else .991,
+                        non_target_avg=10 if offline else 0,
+                        target_cost=10 if offline else 0,
+                        cost_definition='injected samples' if offline else
+                            'suppressed non-target rounds (including 0->0)'))
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            path = out/'paper_results.csv'
+            with path.open('w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=rows[0])
+                writer.writeheader()
+                writer.writerows(rows)
+            manifest = dict(dataset='MovieLens-25M', smoke=False, repeats=50,
+                rows=len(rows), T_grid=[1000], K_grid=[], gaps=[], T_fixed=1000,
+                results_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+                xu_budget_version=generate_paper_figures.xu_budget.VERSION,
+                gap_target_information='known deterministic target reward; exact lower bound equals mu_K')
+            with patch.object(generate_paper_figures, 'DATA', out):
+                for rule in [None, 'target-dependent threshold followed by clipping']:
+                    with self.subTest(rule=rule):
+                        if rule is not None:
+                            manifest['clipped_suppression_feedback'] = rule
+                        (out/'manifest.json').write_text(json.dumps(manifest))
+                        with self.assertRaisesRegex(ValueError, 'zero-feedback Clipped Suppression'):
+                            generate_paper_figures.read_results()
+                manifest['clipped_suppression_feedback'] = 'all non-target rewards replaced by zero; targets unchanged'
+                (out/'manifest.json').write_text(json.dumps(manifest))
+                accepted, _ = generate_paper_figures.read_results()
+                self.assertEqual(len(accepted), len(rows))
 
     def test_trajectories_against_independent_numpy_reference(self):
         arrays = [np.array([0., 1., 1.]), np.array([0., 0., 1.])]
@@ -201,12 +243,7 @@ class ExperimentTests(unittest.TestCase):
                         raw = arrays[arm][rng.integers(0, len(arrays[arm]))]
                         reward = raw
                         if attack == 1 and arm != 1:
-                            nk = counts[-1]
-                            beta = math.sqrt(.5/nk * math.log(math.pi**2 * 2 * nk**2 / .15))
-                            gap = .01 if learner == 'UCB' else 4*math.exp(min(counts[arm]+1,20)) + math.sqrt(8*math.log(math.pi**2*2/.15))
-                            threshold = means[-1] - 2*beta - gap
-                            alpha = min(raw, max(0., sums[arm]+raw-threshold*(counts[arm]+1)))
-                            reward = raw-alpha
+                            reward = 0.
                         elif attack == 2 and step < 100:
                             reward = float(step >= 50 and arm == 1)
                         modifications += reward != raw
@@ -217,6 +254,37 @@ class ExperimentTests(unittest.TestCase):
                     np.testing.assert_array_equal(actual, expected)
                     self.assertEqual(changes, modifications)
                     self.assertAlmostEqual(magnitude, total)
+
+    def test_suppression_zeroes_feedback_even_when_old_threshold_would_keep_it(self):
+        counts, sums = np.array([5, 1000]), np.array([0., 1000.])
+        rewards, offsets = np.array([.8, .3]), np.array([0, 1, 2])
+        beta = math.sqrt(.5 / 1000 * math.log(math.pi**2 * 2 * 1000**2 / .15))
+        old_threshold = 1 - 2 * beta - .01
+        self.assertGreater(old_threshold * 6, .8)  # The old rule would retain .8.
+        rng, reference_rng = np.random.default_rng(42), np.random.default_rng(42)
+        raw = rewards[reference_rng.integers(0, 1)]
+        online, modified, magnitude, *_ = trajectory(
+            counts, sums, rewards, offsets, 1006, 0, 1, rng)
+        np.testing.assert_array_equal(online, [1, 0])
+        np.testing.assert_array_equal(sums, [0., 1000.])
+        self.assertEqual(modified, 1)
+        self.assertEqual(magnitude, raw)
+        self.assertEqual(rng.bit_generator.state, reference_rng.bit_generator.state)
+
+    def test_suppression_preserves_target_feedback_and_random_draws(self):
+        for learner in [0, 1]:
+            counts, sums = np.array([1000, 1000]), np.array([0., 1000.])
+            rewards, offsets = np.array([.8, .25, .5, 1.]), np.array([0, 1, 4])
+            rng, reference_rng = np.random.default_rng(42), np.random.default_rng(42)
+            if learner == 1:
+                reference_rng.normal(size=2)
+            raw = rewards[reference_rng.integers(1, 4)]
+            online, modified, magnitude, *_ = trajectory(
+                counts, sums, rewards, offsets, 2001, learner, 1, rng)
+            np.testing.assert_array_equal(online, [0, 1])
+            np.testing.assert_array_equal(sums, [0., 1000. + raw])
+            self.assertEqual((modified, magnitude), (0, 0.))
+            self.assertEqual(rng.bit_generator.state, reference_rng.bit_generator.state)
 
     def test_certificate_has_no_empirical_success(self):
         previous = bandit.simulate_online

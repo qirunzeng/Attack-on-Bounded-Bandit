@@ -33,8 +33,8 @@ STYLE = {
 def read_results():
     manifest = json.loads((DATA / 'manifest.json').read_text())
     raw = (DATA / 'paper_results.csv').read_bytes()
-    if manifest['dataset'] != 'MovieLens-25M' or manifest['smoke'] or manifest['repeats'] != 10:
-        raise ValueError('Paper figures require a complete ten-repeat MovieLens-25M run')
+    if manifest['dataset'] != 'MovieLens-25M' or manifest['smoke'] or manifest['repeats'] != 50:
+        raise ValueError('Paper figures require a complete fifty-repeat MovieLens-25M run')
     if hashlib.sha256(raw).hexdigest() != manifest['results_sha256']:
         raise ValueError('Results do not match the provenance manifest')
     rows = list(csv.DictReader(raw.decode().splitlines()))
@@ -85,7 +85,7 @@ def read_results():
             assert [sum(p[i] for p in phases) for i in range(K)] == counts
             assert math.isclose(float(r['post_attack_target_ratio']), phases[2][-1]/sum(phases[2]))
     for key, repeats in groups.items():
-        if sorted(repeats) != list(range(10)):
+        if sorted(repeats) != list(range(50)):
             raise ValueError(f'Missing or duplicate repeats: {key}')
     expected = {(s, l, m, str(T), str(K), str(float(g)) if g is not None else '')
                 for s, tasks, methods in [
@@ -103,6 +103,8 @@ def read_results():
         if row['sweep'] == 'gap' and row['method'] in {'Ours', 'Direct'}:
             if not math.isclose(float(row['mu_minus_K']), float(row['Delta_K']), abs_tol=1e-12):
                 raise ValueError('Gap design incorrectly uses a conservative target bound')
+    if manifest.get('clipped_suppression_feedback') != 'all non-target rewards replaced by zero; targets unchanged':
+        raise ValueError('Paper figures require verified zero-feedback Clipped Suppression results')
     return rows, manifest
 
 
@@ -166,7 +168,7 @@ def panel(rows, learner, sweep, series, ratio=False):
                            learner+sweep+key+metric,ratio) for method,metric,key in series)
     return rf'''\begin{{tikzpicture}}
 \begin{{axis}}[
-    width=0.97\linewidth, height=3.7cm,
+    width=0.97\linewidth, height=4.1cm,
     xlabel={{{xlabel}}}, ylabel={{{ylabel}}},
     label style={{font=\small}}, tick label style={{font=\scriptsize}},
     tick align=outside, tick pos=left, axis on top,
@@ -200,8 +202,7 @@ def figure(left, right, labels, legend_tex, caption, ref):
 
 
 def main():
-    rows, manifest = read_results()
-    fixed_T = f"{manifest['T_fixed']:,}".replace(',', '{,}')
+    rows, _ = read_results()
     outputs = {'experiment_style.tex':'% User-specified RGB palette; solid curves and shared semantic styles.\n'+
                ''.join(rf'\definecolor{{{name}}}{{RGB}}{{{",".join(map(str, rgb))}}}'+'\n'
                        for name,rgb in PALETTE.items())+
@@ -213,16 +214,17 @@ def main():
                   ('Clipped Suppression','target_ratio','heuristic')]
         outputs[f'{tag}_cost_experiments.tex'] = figure(
             panel(rows,learner,'horizon',costs),panel(rows,learner,'arms',costs),
-            [r'$K=10$',rf'$T={fixed_T}$'],
+            [r'Attack Cost vs. Horizon $T$', r'Attack Cost vs. Number of Arms $K$'],
             legend([('heuristic','Clipped Suppression'),('total','Total Attack Cost')]),
-            f'{learner} attack costs.',
+            f'Attack Cost for {learner}.',
             f'fig:{tag}_cost_experiments')
         outputs[f'{tag}_ratio_experiments.tex'] = figure(
             panel(rows,learner,'horizon',ratios,True),panel(rows,learner,'arms',ratios,True),
-            [r'$K=10$',rf'$T={fixed_T}$'],
+            [r'Target-arm Selection Ratio\\vs. Horizon $T$',
+             r'Target-arm Selection Ratio\\vs. Number of Arms $K$'],
             legend([('total',r'$N_K/T$'),('online',r'$N_K^{\on}/H$'),
                     ('heuristic',r'Clipped Suppression $N_K/T$')]),
-            f'{learner} target-arm ratios.',
+            f'Target-arm Selection Ratio for {learner}.',
             f'fig:{tag}_ratio_experiments')
     for directory in [ROOT/'fig', ROOT.parent/'fig']:
         directory.mkdir(exist_ok=True)

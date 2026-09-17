@@ -37,15 +37,16 @@ def integer(value, name):
     return int(number)
 
 
-def read_results(data=DATA):
+def read_results(data=DATA, *, allow_legacy=False):
     """Reject partial runs and check every displayed value against saved counts."""
     data = Path(data)
     manifest = json.loads((data / 'manifest.json').read_text())
     version = manifest['version']
-    require(version in {VERSION, LEGACY_VERSION} and
+    repeats = 10 if allow_legacy and version == LEGACY_VERSION else 50
+    require((version == VERSION or (allow_legacy and version == LEGACY_VERSION)) and
             manifest['dataset'] == 'MovieLens-25M' and
-            manifest['repeats'] == 10 and manifest['smoke'] is False,
-            'Theory figures require a complete ten-repeat, non-smoke run')
+            manifest['repeats'] == repeats and manifest['smoke'] is False,
+            'Theory figures require a complete fifty-repeat, non-smoke run; legacy reading is explicit')
     require(manifest['simulation'] ==
             'actual sequential UCB and Gaussian TS, Bernoulli target',
             'Figures require actual sequential trajectories')
@@ -75,7 +76,7 @@ def read_results(data=DATA):
     require(hashlib.sha256(raw).hexdigest() == manifest['results_sha256'],
             'Results do not match the provenance hash')
     rows = list(csv.DictReader(raw.decode().splitlines()))
-    require(len(rows) == manifest['rows'] == 10 * len(configs) * len(LEARNERS),
+    require(len(rows) == manifest['rows'] == repeats * len(configs) * len(LEARNERS),
             'Incomplete results')
     groups = defaultdict(list)
     for row in rows:
@@ -132,13 +133,13 @@ def read_results(data=DATA):
         close(row['target_budget_fraction'], n[-1] / cost, 'target budget fraction')
     expected = {(r, T, K, learner) for r, T, K in configs for learner in LEARNERS}
     require(set(groups) == expected and
-            all(sorted(repeats) == list(range(10)) for repeats in groups.values()),
+            all(sorted(observed) == list(range(repeats)) for observed in groups.values()),
             'Missing or duplicate configurations/repeats')
     if version == LEGACY_VERSION:
         first = {(row['regime'], row['learner'], int(row['repeat'])): row
                  for row in rows if int(row['T']) == T_GRID[0]}
         for learner in LEARNERS:
-            for repeat in range(10):
+            for repeat in range(repeats):
                 fixed = first['fixed', learner, repeat]
                 growing = first['growing', learner, repeat]
                 require({k: v for k, v in fixed.items() if k != 'regime'} ==
@@ -225,10 +226,10 @@ def generate(rows):
         right = panel(rows, learner, 'allocation_fractions') + legend([
             ('target', r'Target $n_K/\mathcal C$'),
             ('non_target', r'Non-target $\sum_{i<K}n_i/\mathcal C$')])
-        labels = ['Normalized cost', r'Budget allocation ($K=10$)']
+        labels = [r'Normalized Attack Cost vs. Horizon $T$', r'Budget Share vs. Horizon $T$']
         outputs[f'{learner.lower()}_theory_alignment.tex'] = figure(
             left, right, labels, '',
-            f'{learner} near-boundary cost and allocation.',
+            f'Near-Boundary Cost and Allocation for {learner}.',
             f'fig:{learner.lower()}-theory-alignment').replace(
                 'generate_paper_figures.py from verified MovieLens-25M trajectories.',
                 'generate_theory_figures.py from verified near-boundary trajectories.')

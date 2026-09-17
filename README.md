@@ -1,7 +1,7 @@
 # Reproducing the paper experiments
 
 The supported paper pipeline is `paper_runner.py` → `generate_paper_figures.py`.
-It uses MovieLens-25M, ten repeats, actual sequential trajectories, and the original
+It uses MovieLens-25M, 50 repeats, actual sequential trajectories, and the original
 100,000–1,000,000 horizon grid. Both the arm-count and target-gap sweeps fix
 T=1,000,000. The dataset size does not set the learner horizon.
 
@@ -11,7 +11,7 @@ python -m unittest test_experiments -v
 python paper_runner.py
 python validate_xu_run.py
 python generate_paper_figures.py
-python theory_alignment_runner.py
+python theory_alignment_runner.py --no-reuse
 python generate_theory_figures.py
 ```
 
@@ -24,7 +24,7 @@ Results and their provenance manifest are written to `results/ml-25m/paper/`.
 The manifest records input and output SHA-256 hashes, source hashes, selected movie
 IDs/counts/means, seeds, configurations, and runtime. A partial CSV is never used by
 the figure generator. `python paper_runner.py --smoke --repeats 2` writes a separate
-small run; smoke results cannot be published as ten-repeat paper figures.
+small run; smoke results cannot be published as 50-repeat paper figures.
 
 Figures are generated into both this directory's `fig/` and the parent paper's
 `fig/`. The three former plot entry points delegate to the same generator so they
@@ -32,7 +32,7 @@ cannot silently restore different styles or consume uncertified legacy CSVs.
 Compile the paper from its parent directory with:
 
 ```sh
-latexmk -pdf -interaction=nonstopmode -halt-on-error 0-main.tex
+latexmk -pdf -outdir=output/pdf -interaction=nonstopmode -halt-on-error 0-main.tex
 ```
 
 Legacy runners and CSV files are retained for historical comparison. They are not
@@ -54,11 +54,11 @@ original sigma=0.5, delta=0.05, this confidence floor happens to be zero.
 The horizons are 100,000, 250,000, 1,000,000, 2,500,000, and 10,000,000. Each curve
 fixes K at one of 5, 10, 15, 20, and 25. All have Delta_K=o(S_T/T), with the same MovieLens competitor-selection rule, bounded rewards,
 five clean observations per arm, sigma=0.5, and delta=0.05. Every configuration has
-ten independent repeats; clean random numbers are shared across horizons at the
-same K. The 500 CSV rows contain 100 verified K=10 trajectories reused from
-`results/ml-25m/theory-alignment/` and 400 newly simulated trajectories. The old
-data are preserved; the new manifest records reuse provenance and source hashes.
-Use `--no-reuse` to regenerate all trajectories.
+50 independent repeats; clean random numbers are shared across horizons at the
+same K. The current run contains 2,500 trajectories, regenerated with
+`--no-reuse` and the original seed rule. The previous ten-repeat results and
+their sources are archived under the parent paper's
+`output/reviews/repeats-50-baseline-20260910/`.
 
 `generate_theory_figures.py` validates the completed manifest and trajectories,
 then writes `ucb_theory_alignment.tex` and `ts_theory_alignment.tex` to both figure
@@ -70,13 +70,13 @@ legends identify target and aggregate non-target budgets.
 The references 1, 2/3 and 1/3 are asymptotic: Lambda is not a finite-horizon lower
 bound, and TS has no allocation necessity claim. Online success is recorded
 separately from budget allocation. All plotted means and sample-SD bands use
-the ten per-configuration repeats.
+the 50 per-configuration repeats.
 
 For a quick isolated run and the added validation tests:
 
 ```sh
 python -m unittest test_theory_simulation test_theory_figures -v
-python theory_alignment_runner.py --smoke --repeats 2
+python theory_alignment_runner.py --smoke --repeats 2 --no-reuse
 ```
 
 Smoke results are stored separately and rejected by the paper figure generator.
@@ -84,24 +84,110 @@ The original simulation's default reward path and random streams are unchanged;
 the optional target_mean parameter generates an exact Bernoulli probability
 without approximating it by a finite empirical array.
 
+## Epsilon-greedy experiment
+
+This independent controlled Bernoulli experiment uses no MovieLens files. The
+entire warm-start log is injected (`N_i^0=0`), with target rewards one and
+non-target rewards zero. The learner uses `epsilon_s=min(1,K/s)` on its internal
+clock, starting online at `T0=C`. Competitor means are equally spaced in
+`[0.2,0.8]`; the target mean is `r_T^eg/log(T)>0`, so its gap is
+`o(r_T^eg)`. Reward means are used only by the environment, not the allocation.
+
+```sh
+python -m unittest test_epsilon_greedy_experiment -v
+python epsilon_greedy_experiment.py
+python -m unittest test_epsilon_greedy_comparison -v
+python epsilon_greedy_comparison.py
+python generate_epsilon_greedy_figures.py
+```
+
+The horizon and arm-count grids match the near-boundary figures above, with 50
+independent sequential trajectories per configuration. Each online decision is
+simulated, including greedy maximization, uniform exploration, and Bernoulli
+feedback. The runner records greedy mistakes separately from exploratory pulls;
+it does not force the target based on the theorem.
+
+The near-boundary trajectories and provenance are saved under
+`results/synthetic/epsilon-greedy/`. The separate comparison runner writes
+`results/synthetic/epsilon-greedy-comparison/`: it uses ten horizon points from
+100,000 to 1,000,000 at `K=10`, and `K=5,10,15,20,30,40,50` at `T=1,000,000`.
+Each method has 50 repeats per configuration. The shared configuration is
+simulated once and reused in both panels. Both
+methods receive the same Bernoulli distributions. Clipped Suppression has no
+offline log, initializes with an online target pull followed by the other arms,
+and sets every non-target reward to zero. Its cost counts every non-target pull,
+including zero-to-zero replacements. Greedy ties use the first arm index for
+both methods. Total target ratios include our injected target observations;
+online target ratios use only the remaining online horizon.
+
+Use `--smoke --repeats 2` for an isolated quick run. The figure generator checks
+completed manifests and saved counts, then writes `eg_cost_experiments.tex`,
+`eg_ratio_experiments.tex`, and `eg_theory_alignment.tex` to both figure
+directories. These match the UCB/TS cost, ratio, and theory panels. The theory
+figure evaluates the exact allocation on ten horizon points, normalizing cost
+by `2*sqrt(T*(K-1)*B)` and showing both budget shares with limit `1/2`.
+These deterministic quantities have no sampling bands; stochastic comparison
+statistics use sample SD. Additional allocation points do not claim extra
+online simulations. The `1:1` split is a construction property, not an
+allocation necessity result.
+
+## UCB comparison with Xu et al. (2021)
+
+`ucb_xu_comparison.py` runs a separate target-gap sweep for Figure 4. Both attacks
+use the same anytime UCB index `mean + sqrt(log(t)/N)`, corresponding to the
+exploration setting `sigma=1/3`. The existing UCB/TS/epsilon-greedy experiments
+remain unchanged. Competitors use the same MovieLens rewards, while the target
+always returns its known reward `Delta_K`. Thus the exact target feedback floor
+is valid without a concentration assumption; `sigma=1/3` is not asserted to be
+a sub-Gaussian bound for all MovieLens arms.
+
+We retain Xu's prescribed A.2 two-phase budgets, whose formulas contain
+`log(T)`, while applying the schedule to the common `log(t)` learner. The source
+paper uses a fixed-horizon learner; this comparison does not assume that its
+notation is a typo. Xu starts without offline observations; Ours retains five
+clean observations per arm and the rounded threshold allocation. Both are run
+for 50 repeats at `K=10`, `T=1,000,000`. The sweep uses the previous 14 gap
+multipliers and plots the normalized gap `Delta_K/(S_T/T)`.
+
+```sh
+python ucb_xu_comparison.py
+python generate_ucb_xu_figure.py
+```
+
+Results and a separate provenance manifest are saved under
+`results/ml-25m/ucb-xu-gap/`. Undefined or horizon-exceeding Xu budgets are stored
+as infeasible, with no fabricated selection ratios. Figure 4 shows our injection
+cost versus Xu's scheduled corruption rounds, and the three ratio curves used in
+Figure 2. Missing Xu points are not connected across infeasible configurations.
+
 ## Figure contract
 
-Captions are short titles. Experimental settings, cost/ratio definitions, and
-uncertainty-band descriptions belong in the main text and TS appendix.
+Captions use title case and the pattern `Topic for learner.` Panel titles name
+the metric and horizontal variable, for example `Attack Cost vs. Horizon T` or
+`Target-arm Selection Ratio vs. Number of Arms K`. Long paired titles break
+before `vs.` on both panels. Selection-ratio captions use the complete phrase
+`Target-arm Selection Ratio`. Fixed sweep parameters, omitted-point rules, metric definitions, and
+uncertainty-band descriptions belong in the experiment text.
 
 | Figure | Panel (a) | Panel (b) |
 |---|---|---|
 | 1 / UCB costs | Clipped Suppression, Total Attack Cost vs T | Same two series vs K |
 | 2 / UCB ratios | N_K/T, N_K^on/H, Clipped Suppression N_K/T vs T | Same three series vs K |
 | 3 / UCB near-boundary | C/Lambda vs T, fixed K=5,10,15,20,25 | Target and aggregate non-target budget shares vs T, fixed K=10 |
-| 4–5 / TS costs and ratios | Original cost/ratio series vs T | Same series vs K |
-| 6 / TS near-boundary | C/Lambda_ts vs T, fixed K=5,10,15,20,25 | Target and aggregate non-target budget shares vs T, fixed K=10 |
+| 4 / UCB versus Xu | Ours and Xu attack costs vs Delta_K/(S_T/T) | Ours N_K/T, Ours N_K^on/H, Xu N_K/T vs Delta_K/(S_T/T) |
+| 5–6 / TS costs and ratios | Original cost/ratio series vs T | Same series vs K |
+| 7 / TS near-boundary | C/Lambda_ts vs T, fixed K=5,10,15,20,25 | Target and aggregate non-target budget shares vs T, fixed K=10 |
+| 8 / Epsilon-greedy costs | Clipped Suppression, Total Attack Cost vs T | Same two series vs K |
+| 9 / Epsilon-greedy ratios | N_K/T, N_K^on/H, Clipped Suppression N_K/T vs T | Same three series vs K |
+| 10 / Epsilon-greedy near-boundary | C/(2 sqrt(T(K-1)B)) vs T, fixed K=5,10,15,20,25 | Target and aggregate non-target budget shares vs T, fixed K=10; both approach 1/2 |
 
-The UCB and TS gap figures and experimental discussion are omitted from the
-paper. The diagnostic CSVs and implementations are preserved; the paper figure
-generator no longer produces gap figures.
+The former UCB/TS gap diagnostics remain preserved separately. Figure 4 uses the
+new UCB-only comparison, not those earlier results; the shared paper figure
+generator does not produce gap figures.
 
-`Clipped Suppression` replaces the vague label `Heuristic`. All main cost curves
+`Clipped Suppression` returns zero on every non-target online pull and leaves target rewards unchanged, for UCB, TS, and epsilon-greedy. It has no suppression-margin parameter.
+Replaying all 700 UCB baseline records (50 repeats per configuration) under this rule preserved every stored metric and both UCB figures; see `../output/reviews/zero-suppression-baseline-20260911/replay-report.json`.
+This baseline replaces the vague label `Heuristic`. All main cost curves
 use the threshold construction without displaying “Threshold” in their legend.
 Direct is omitted from all paper figures; its stored results remain available for numerical diagnostics. Cost axes share the
 label `Attack Cost`; ratio axes share `Target-arm Ratio`. All axes use linear scales; cost axes start at zero. `STYLE` in

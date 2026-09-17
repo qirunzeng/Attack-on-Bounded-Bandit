@@ -34,15 +34,7 @@ def sequential_reference(clean, allocation, arrays, horizon, learner, attack,
             raw = arrays[arm][rng.integers(len(arrays[arm]))]
         observed = raw
         if attack == 1 and arm != k - 1:
-            if learner == 'TS':
-                observed = 0.0
-            else:
-                count = counts[-1]
-                radius = np.sqrt(.5 * np.log(math.pi**2 * k * count**2 / .15) / count)
-                ceiling = totals[-1] / count - 2 * radius - .01
-                # Project the largest feedback satisfying the suppression
-                # ceiling onto the legal interval [0, raw].
-                observed = np.clip(ceiling * (counts[arm] + 1) - totals[arm], 0.0, raw)
+            observed = 0.0
         modified += raw != observed
         magnitude += abs(raw - observed)
         counts[arm] += 1

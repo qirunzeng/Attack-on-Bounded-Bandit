@@ -5,7 +5,7 @@
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.97\linewidth, height=3.7cm,
+    width=0.97\linewidth, height=4.1cm,
     xlabel={Horizon $T$}, ylabel={Attack Cost},
     label style={font=\small}, tick label style={font=\scriptsize},
     tick align=outside, tick pos=left, axis on top,
@@ -13,25 +13,25 @@
     xmode=normal, ymode=normal,ymin=0,xmin=100000, xmax=1000000, xtick={100000,400000,700000,1000000}, scaled x ticks=base 10:-6,
 ]
 
-\addplot[name path=TShorizonheuristiccostup, draw=none, forget plot] coordinates {(100000,71633.9038142) (250000,125742.661551) (400000,157944.280161) (550000,174643.868045) (700000,187659.230609) (850000,199687.373268) (1000000,209989.793149)};
-\addplot[name path=TShorizonheuristiccostlo, draw=none, forget plot] coordinates {(100000,65458.4961858) (250000,118414.138449) (400000,148586.319839) (550000,168689.531955) (700000,183536.569391) (850000,194119.426732) (1000000,203078.806851)};
+\addplot[name path=TShorizonheuristiccostup, draw=none, forget plot] coordinates {(100000,70375.3181764) (250000,126467.873756) (400000,156786.083348) (550000,175055.052774) (700000,189276.921972) (850000,202385.090374) (1000000,211322.778758)};
+\addplot[name path=TShorizonheuristiccostlo, draw=none, forget plot] coordinates {(100000,66248.5218236) (250000,118456.046244) (400000,148315.596652) (550000,168064.707226) (700000,183612.438028) (850000,194012.709626) (1000000,204090.741242)};
 \addplot[expheuristic, fill opacity=0.12, draw=none, forget plot] fill between[of=TShorizonheuristiccostup and TShorizonheuristiccostlo];
-\addplot[color=expheuristic, thick, solid, mark=square, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(100000,68546.2) (250000,122078.4) (400000,153265.3) (550000,171666.7) (700000,185597.9) (850000,196903.4) (1000000,206534.3)};
+\addplot[color=expheuristic, thick, solid, mark=square, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(100000,68311.92) (250000,122461.96) (400000,152550.84) (550000,171559.88) (700000,186444.68) (850000,198198.9) (1000000,207706.76)};
 
-\addplot[name path=TShorizontotalcostup, draw=none, forget plot] coordinates {(100000,41895.1275951) (250000,74716.8221745) (400000,100984.095534) (550000,124029.089827) (700000,145020.802107) (850000,164539.768756) (1000000,182929.800149)};
-\addplot[name path=TShorizontotalcostlo, draw=none, forget plot] coordinates {(100000,41830.0724049) (250000,74636.5778255) (400000,100892.304466) (550000,123928.510173) (700000,144913.197893) (850000,164425.431244) (1000000,182810.599851)};
+\addplot[name path=TShorizontotalcostup, draw=none, forget plot] coordinates {(100000,41897.1309106) (250000,74720.4442654) (400000,100988.412527) (550000,124033.601228) (700000,145025.039733) (850000,164544.864365) (1000000,182935.625976)};
+\addplot[name path=TShorizontotalcostlo, draw=none, forget plot] coordinates {(100000,41831.7090894) (250000,74637.5157346) (400000,100894.067473) (550000,123929.758772) (700000,144913.800267) (850000,164428.055635) (1000000,182812.254024)};
 \addplot[exptotal, fill opacity=0.12, draw=none, forget plot] fill between[of=TShorizontotalcostup and TShorizontotalcostlo];
-\addplot[color=exptotal, thick, solid, mark=o, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(100000,41862.6) (250000,74676.7) (400000,100938.2) (550000,123978.8) (700000,144967) (850000,164482.6) (1000000,182870.2)};
+\addplot[color=exptotal, thick, solid, mark=o, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(100000,41864.42) (250000,74678.98) (400000,100941.24) (550000,123981.68) (700000,144969.42) (850000,164486.46) (1000000,182873.94)};
 
 \end{axis}
 \end{tikzpicture}
-\par\vspace{2pt}{\small (a) $K=10$}
+\par\vspace{2pt}{\small (a) Attack Cost vs. Horizon $T$}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.49\linewidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.97\linewidth, height=3.7cm,
+    width=0.97\linewidth, height=4.1cm,
     xlabel={Number of Arms $K$}, ylabel={Attack Cost},
     label style={font=\small}, tick label style={font=\scriptsize},
     tick align=outside, tick pos=left, axis on top,
@@ -39,19 +39,19 @@
     xmode=normal, ymode=normal,ymin=0,xmin=5, xmax=50, xtick={5,10,20,30,40,50},
 ]
 
-\addplot[name path=TSarmsheuristiccostup, draw=none, forget plot] coordinates {(5,96835.1696992) (10,209989.793149) (15,323332.591567) (20,422687.460269) (30,602274.043565) (40,727890.682174) (50,815802.958148)};
-\addplot[name path=TSarmsheuristiccostlo, draw=none, forget plot] coordinates {(5,94352.8303008) (10,203078.806851) (15,308793.408433) (20,407873.339731) (30,572488.956435) (40,709269.917826) (50,799316.441852)};
+\addplot[name path=TSarmsheuristiccostup, draw=none, forget plot] coordinates {(5,96730.5561606) (10,211322.778758) (15,319423.443002) (20,420780.096456) (30,597910.994626) (40,727889.192247) (50,823654.379631)};
+\addplot[name path=TSarmsheuristiccostlo, draw=none, forget plot] coordinates {(5,93709.8838394) (10,204090.741242) (15,307453.756998) (20,406845.703544) (30,576171.445374) (40,706485.007753) (50,802131.980369)};
 \addplot[expheuristic, fill opacity=0.12, draw=none, forget plot] fill between[of=TSarmsheuristiccostup and TSarmsheuristiccostlo];
-\addplot[color=expheuristic, thick, solid, mark=square, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(5,95594) (10,206534.3) (15,316063) (20,415280.4) (30,587381.5) (40,718580.3) (50,807559.7)};
+\addplot[color=expheuristic, thick, solid, mark=square, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(5,95220.22) (10,207706.76) (15,313438.6) (20,413812.9) (30,587041.22) (40,717187.1) (50,812893.18)};
 
-\addplot[name path=TSarmstotalcostup, draw=none, forget plot] coordinates {(5,138233.714099) (10,182929.800149) (15,213949.083227) (20,238807.998117) (30,278797.609862) (40,311110.125846) (50,339063.982437)};
-\addplot[name path=TSarmstotalcostlo, draw=none, forget plot] coordinates {(5,138176.485901) (10,182810.599851) (15,213821.316773) (20,238714.201883) (30,278626.790138) (40,310980.874154) (50,338875.217563)};
+\addplot[name path=TSarmstotalcostup, draw=none, forget plot] coordinates {(5,138235.306701) (10,182935.625976) (15,213962.086448) (20,238852.44328) (30,278784.134951) (40,311141.090747) (50,339049.651684)};
+\addplot[name path=TSarmstotalcostlo, draw=none, forget plot] coordinates {(5,138140.253299) (10,182812.254024) (15,213839.233552) (20,238728.79672) (30,278622.065049) (40,310991.269253) (50,338873.948316)};
 \addplot[exptotal, fill opacity=0.12, draw=none, forget plot] fill between[of=TSarmstotalcostup and TSarmstotalcostlo];
-\addplot[color=exptotal, thick, solid, mark=o, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(5,138205.1) (10,182870.2) (15,213885.2) (20,238761.1) (30,278712.2) (40,311045.5) (50,338969.6)};
+\addplot[color=exptotal, thick, solid, mark=o, mark size=2.4pt, mark options={solid, fill=none}] coordinates {(5,138187.78) (10,182873.94) (15,213900.66) (20,238790.62) (30,278703.1) (40,311066.18) (50,338961.8)};
 
 \end{axis}
 \end{tikzpicture}
-\par\vspace{2pt}{\small (b) $T=1{,}000{,}000$}
+\par\vspace{2pt}{\small (b) Attack Cost vs. Number of Arms $K$}
 \end{minipage}
 
 \par\vspace{2pt}
@@ -59,6 +59,6 @@
 \tikz[baseline=-0.6ex]{\draw[expheuristic, thick, solid] (0,0)--(.48,0); \draw plot[mark=square, mark size=2.4pt, mark options={solid, fill=none, draw=expheuristic}] coordinates {(.24,0)};}\;Clipped Suppression & \tikz[baseline=-0.6ex]{\draw[exptotal, thick, solid] (0,0)--(.48,0); \draw plot[mark=o, mark size=2.4pt, mark options={solid, fill=none, draw=exptotal}] coordinates {(.24,0)};}\;Total Attack Cost
 \end{tabular}}
 
-\caption{TS attack costs.}
+\caption{Attack Cost for TS.}
 \label{fig:ts_cost_experiments}
 \end{figure}

@@ -15,18 +15,20 @@ def sha(path):
 
 def main():
     rows, manifest = read_results()
-    for name, expected in manifest['source_sha256'].items():
+    for name, expected in manifest.get('reproduction_source_sha256', manifest['source_sha256']).items():
         assert sha(ROOT/name) == expected, f'Source changed: {name}'
     previous = DATA/'history/derived-xu-budgets-20260907/paper_results.csv'
     stable = 0
     if previous.exists():
         key = lambda r: tuple(r[k] for k in ['sweep','learner','method','repeat','T','K','multiplier'])
         old = {key(r): r for r in csv.DictReader(previous.open())}
-        for row in rows:
-            if row['method'] == 'Two-phase':
+        current = {key(r): r for r in rows}
+        for row_key, before in old.items():
+            if before['method'] == 'Two-phase':
                 continue
-            before = old[key(row)]
-            assert all(row[k] == v for k, v in before.items()), key(row)
+            assert row_key in current, f'Missing historical record: {row_key}'
+            row = current[row_key]
+            assert all(row[k] == v for k, v in before.items()), row_key
             stable += 1
     grouped = defaultdict(list)
     for row in rows:

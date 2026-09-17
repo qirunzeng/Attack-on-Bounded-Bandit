@@ -155,7 +155,7 @@ def run_case(metadata, repeat, sweep, T, gap=None, include_direct=True, baseline
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--repeats', type=int, default=10)
+    parser.add_argument('--repeats', type=int, default=50)
     parser.add_argument('--smoke', action='store_true', help='Small separate validation run; never used in paper figures')
     args = parser.parse_args()
     if mlrunner.MOVIELENS_DATASET != '25m':
@@ -205,6 +205,7 @@ def main():
                     results_sha256=sha256(final), selected_arms=selected,
                     simulation='sequential UCB and Gaussian TS; PCG64; Numba; no certificate counts',
                     baseline_initialization='no offline log; Clipped: target then non-targets; Xu UCB: index order; Xu TS: Beta(1,1) from round 1; attacks active from round 1',
+                    clipped_suppression_feedback='all non-target rewards replaced by zero; targets unchanged',
                     source_sha256={p.name:sha256(p) for p in [ROOT/'bandit.py', ROOT/'mlrunner.py', ROOT/'simulation.py', ROOT/'direct_search.py', ROOT/'xu_budget.py', ROOT/'xu_simulation.py', Path(__file__)]})
     (out / 'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
     print(f'Wrote {count} rows to {final}', flush=True)

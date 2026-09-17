@@ -141,3 +141,12 @@
 - 固定 K=10 与增长 K~T^(1/4)，T 扩展到 10^7；每配置十次重复。200 条绘图记录含共享首点，实际运行 180 条顺序轨迹，全部零次非目标在线拉取。
 - 两张新图展示各算法自己的 C/Lambda 和 n_K/C，参照为 1 与 2/3 的渐近值；TS 不声称 allocation necessity。UCB 的有限时域比值略低于 1 如实保留。
 - 23 项回归与独立轨迹/绘图验证测试通过；默认模拟随机流不变。设置、结果和条件详见 ../output/reviews/theory-aligned-experiments-20260908.md，完整数据与 provenance 位于 results/ml-25m/theory-alignment/。
+
+
+2026-09-11: Unified zero-feedback Clipped Suppression
+
+- Current UCB, TS, and epsilon-greedy baselines return zero on every non-target online pull and preserve genuine target rewards. They have no offline log; suppression includes initialization. Costs count all non-target pulls, including zero-to-zero replacements.
+- Removed the Jun threshold and margin parameters from the active simulator. Prior Jun/Zuo implementations remain only in the historical runners identified in README. The paper now states the explicit zero-feedback rule.
+- Replayed all 14 UCB configurations with the original data, seeds, and 50 repeats. The shared configuration across sweeps gives 650 distinct trajectories for 700 CSV records. Every replayed non-target feedback sum is zero.
+- All 700 records match the previous results exactly; the entire paper_results.csv SHA-256 is unchanged. The other 6300 records and all TS/EG/near-boundary data are preserved. Regenerated UCB figures consequently have unchanged numerical curves.
+- Provenance distinguishes original generation-source hashes from current reproduction-source hashes and records the scoped replay. Snapshot, replay script, and feedback diagnostics: ../output/reviews/zero-suppression-baseline-20260911/.

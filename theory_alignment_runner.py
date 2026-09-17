@@ -37,7 +37,7 @@ def reusable_results(source_hashes, ratings_hash, movies_hash):
     if not (LEGACY_DATA / 'manifest.json').exists():
         return {}, None
     from generate_theory_figures import read_results
-    rows, manifest = read_results(LEGACY_DATA)
+    rows, manifest = read_results(LEGACY_DATA, allow_legacy=True)
     for name in ['bandit.py', 'mlrunner.py', 'paper_runner.py', 'simulation.py']:
         if manifest['source_sha256'][name] != source_hashes[name]:
             raise ValueError(f'Cannot reuse trajectories after changing {name}; use --no-reuse')
@@ -119,7 +119,7 @@ def run_case(metadata, repeat, regime, T):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--smoke', action='store_true')
-    parser.add_argument('--repeats', type=int, default=10)
+    parser.add_argument('--repeats', type=int, default=50)
     parser.add_argument('--no-reuse', action='store_true',
                         help='Rerun K=10 instead of reusing verified legacy trajectories')
     args = parser.parse_args()

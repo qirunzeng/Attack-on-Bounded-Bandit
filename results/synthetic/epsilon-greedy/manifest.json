@@ -1,0 +1,149 @@
+{
+  "version": "epsilon-greedy-boundary-v1",
+  "dataset": "Controlled Bernoulli",
+  "completed": true,
+  "status": "completed",
+  "smoke": false,
+  "T_grid": [
+    100000,
+    250000,
+    1000000,
+    2500000,
+    10000000
+  ],
+  "K_grid": [
+    5,
+    10,
+    15,
+    20,
+    25
+  ],
+  "repeats": 50,
+  "configurations": [
+    {
+      "T": 100000,
+      "K": 5
+    },
+    {
+      "T": 250000,
+      "K": 5
+    },
+    {
+      "T": 1000000,
+      "K": 5
+    },
+    {
+      "T": 2500000,
+      "K": 5
+    },
+    {
+      "T": 10000000,
+      "K": 5
+    },
+    {
+      "T": 100000,
+      "K": 10
+    },
+    {
+      "T": 250000,
+      "K": 10
+    },
+    {
+      "T": 1000000,
+      "K": 10
+    },
+    {
+      "T": 2500000,
+      "K": 10
+    },
+    {
+      "T": 10000000,
+      "K": 10
+    },
+    {
+      "T": 100000,
+      "K": 15
+    },
+    {
+      "T": 250000,
+      "K": 15
+    },
+    {
+      "T": 1000000,
+      "K": 15
+    },
+    {
+      "T": 2500000,
+      "K": 15
+    },
+    {
+      "T": 10000000,
+      "K": 15
+    },
+    {
+      "T": 100000,
+      "K": 20
+    },
+    {
+      "T": 250000,
+      "K": 20
+    },
+    {
+      "T": 1000000,
+      "K": 20
+    },
+    {
+      "T": 2500000,
+      "K": 20
+    },
+    {
+      "T": 10000000,
+      "K": 20
+    },
+    {
+      "T": 100000,
+      "K": 25
+    },
+    {
+      "T": 250000,
+      "K": 25
+    },
+    {
+      "T": 1000000,
+      "K": 25
+    },
+    {
+      "T": 2500000,
+      "K": 25
+    },
+    {
+      "T": 10000000,
+      "K": 25
+    }
+  ],
+  "seed": 20260910,
+  "c": 1.0,
+  "delta": 0.05,
+  "N0_i": 0,
+  "results_file": "epsilon_greedy_results.csv",
+  "non_target_means": "numpy.linspace(0.2, 0.8, K-1)",
+  "target_mean": "sqrt((K-1)*B/T)/log(T); positive Bernoulli target",
+  "schedule": "epsilon_s=min(1,c*K/s), s=T0+1,...,T; T0=C",
+  "allocation": "nK=ceil(sqrt(T*(K-1)*B))+1; ni=ceil(sqrt(T*B/(K-1)))",
+  "B": "ceil(sum_{s=1}^T epsilon_s/K + sqrt(2*sum*log((K-1)/delta)) + log((K-1)/delta)/3)",
+  "rewards": "Independent Bernoulli rewards; all injected target rewards 1, others 0",
+  "simulation": "Actual sequential decisions; NumPy PCG64; first-max greedy ties",
+  "confidence": "The theorem guarantees probability at least 1-2*delta",
+  "source_sha256": {
+    "epsilon_greedy_experiment.py": "2c3eab0429423fcdc394266185e2a8c6b5d58908010ef34f3c98cf68da302a14",
+    "test_epsilon_greedy_experiment.py": "eb83adbddb2c5986a12b5a7cd2da08dc4ec830566a348c1ff2e745f735c61876"
+  },
+  "python": "3.11.15",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "numpy": "2.4.6",
+  "scipy": "1.17.1",
+  "numba": "0.67.0",
+  "rows": 1250,
+  "results_sha256": "31bac237a33398730497fb3c47504903389936071a3ac7c2be2a4b4e845dad88",
+  "elapsed_seconds": 55.07526754200808
+}
