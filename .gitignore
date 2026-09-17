@@ -11,8 +11,8 @@ __pycache__/
 *.nbi
 .DS_Store
 
-# Publish completed experiment results, not local runs or historical artifacts.
+# Keep generated results and figures local.
 *.log
 *.partial.csv
-/results/**/smoke/
-/results/**/history/
+/results/
+/fig/

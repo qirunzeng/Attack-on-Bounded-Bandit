@@ -1,6 +1,6 @@
 # Bounded Bandit Attack Experiments
 
-Code and saved results for the paper's UCB, Gaussian TS, and epsilon-greedy experiments.
+Code for the paper's UCB, Gaussian TS, and epsilon-greedy experiments.
 Run commands from this directory.
 
 ## Setup
@@ -38,7 +38,10 @@ python ucb_xu_comparison.py
 For a quick check, use `--smoke --repeats 2` with a runner (`--no-reuse` for the theory runner).
 Smoke outputs are separate and cannot be used for paper figures.
 
-## Generate figures from saved results
+## Generate figures
+
+Run the experiments above first. `results/` and `fig/` are generated locally and
+are not included in this repository.
 
 ```sh
 python generate_paper_figures.py
@@ -50,7 +53,7 @@ python generate_ucb_xu_figure.py
 Generators validate completed result manifests and write TikZ files to `fig/`
 and the parent paper's `fig/`. They do not rerun simulations.
 
-| Experiment | Saved results |
+| Experiment | Local results |
 |---|---|
 | UCB/TS comparisons | `results/ml-25m/paper/` |
 | UCB/TS allocation | `results/ml-25m/theory-alignment-fixed-k/` |
@@ -58,8 +61,7 @@ and the parent paper's `fig/`. They do not rerun simulations.
 | Epsilon-greedy allocation | `results/synthetic/epsilon-greedy/` |
 | UCB versus Xu | `results/ml-25m/ucb-xu-gap/` |
 
-Manifests record seeds, configuration, and source/data hashes. Other saved result
-files are historical diagnostics, not inputs to the current paper figures.
+Manifests record seeds, configuration, and source/data hashes.
 
 ## Reading the results
 
@@ -77,5 +79,5 @@ files are historical diagnostics, not inputs to the current paper figures.
 
 `mlrunner.py` supplies data loading and clean logs. `bandit.py` and `simulation.py`
 implement UCB/TS; the `epsilon_greedy_*` modules implement EG. `direct_search.py`,
-`xu_budget.py`, and `xu_simulation.py` remain dependencies of the saved-result pipeline.
+`xu_budget.py`, and `xu_simulation.py` remain dependencies of the experiment pipeline.
 Historical methodological notes are in `EXPERIMENT_AUDIT.md`.
